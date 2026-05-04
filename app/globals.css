@@ -3,25 +3,67 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-dark: #080808;
+  --bg-light: #ffffff;
+  --gold: #c9a84c;
+  --cream: #f0e8d5;
+  --dark-text: #1a1a1a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-dark);
+  color: var(--cream);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: #c9a84c33;
+  color: #c9a84c;
+}
+
+/* Progress bar */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: #c9a84c;
+  z-index: 9999;
+  transform-origin: left;
+  transition: width 0.1s linear;
+}
+
+/* Smooth scroll override for GSAP */
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  .gold-gradient {
+    background: linear-gradient(135deg, #c9a84c, #e0c170);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .section-dark {
+    background-color: #080808;
+    color: #f0e8d5;
+  }
+  .section-light {
+    background-color: #ffffff;
+    color: #1a1a1a;
   }
 }
