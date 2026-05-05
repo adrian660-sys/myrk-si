@@ -56,8 +56,10 @@ export default function SportsSection() {
   return (
     <section
       id="sports"
+      data-section
       ref={sectionRef}
       className="section-dark relative py-24 md:py-36 px-6 md:px-14 overflow-hidden"
+      style={{ scrollMarginTop: "80px" }}
     >
       {/* Watermark */}
       <div

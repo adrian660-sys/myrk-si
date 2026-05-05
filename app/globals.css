@@ -43,10 +43,13 @@ body {
   transition: width 0.1s linear;
 }
 
-/* Smooth scroll override for GSAP */
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
+/* All sections respect fixed nav height */
+[data-section],
+section[id] {
+  scroll-margin-top: 80px;
 }
+
+/* No CSS scroll-snap — handled by JS */
 
 @layer utilities {
   .text-balance {

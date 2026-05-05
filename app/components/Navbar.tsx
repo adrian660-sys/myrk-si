@@ -1,81 +1,90 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const navLinks = [
-  { label: "About", href: "#about" },
-  { label: "Experience", href: "#experience" },
-  { label: "Travel", href: "#travel" },
-  { label: "Sports", href: "#sports" },
-  { label: "Blog", href: "#blog" },
-  { label: "Contact", href: "#contact" },
+  { label: "About",   href: "/#about",   isPage: false },
+  { label: "Sports",  href: "/#sports",  isPage: false },
+  { label: "Contact", href: "/#contact", isPage: false },
+  { label: "Work",    href: "/work",     isPage: true  },
+  { label: "Blog",    href: "/blog",     isPage: true  },
 ];
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("");
-  const [scrolled, setScrolled] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen]   = useState(false);
+  const [scrolled, setScrolled]   = useState(false);
+  const [active, setActive]       = useState("");
+  const menuRef    = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const pathname   = usePathname();
+  const router     = useRouter();
 
+  /* scroll background */
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 60);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
+  /* active section via IntersectionObserver — only on homepage */
   useEffect(() => {
-    const sections = navLinks.map((l) => l.href.replace("#", ""));
-    const observers = sections.map((id) => {
+    if (pathname !== "/") return;
+    const ids = ["hero", "about", "sports", "contact"];
+    const obs = ids.map((id) => {
       const el = document.getElementById(id);
       if (!el) return null;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) setActiveSection(id);
-        },
+      const o = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActive(id); },
         { threshold: 0.4 }
       );
-      obs.observe(el);
-      return obs;
+      o.observe(el);
+      return o;
     });
-    return () => observers.forEach((o) => o?.disconnect());
-  }, []);
+    return () => obs.forEach((o) => o?.disconnect());
+  }, [pathname]);
 
+  /* mobile overlay animation */
   useEffect(() => {
-    if (!menuRef.current || !overlayRef.current) return;
+    const overlay = overlayRef.current;
+    const menu    = menuRef.current;
+    if (!overlay || !menu) return;
     if (menuOpen) {
-      gsap.set(overlayRef.current, { display: "flex" });
+      gsap.set(overlay, { display: "flex" });
+      gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" });
       gsap.fromTo(
-        overlayRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.3, ease: "power2.out" }
-      );
-      gsap.fromTo(
-        menuRef.current.querySelectorAll("a"),
-        { y: 40, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.5, stagger: 0.07, ease: "power3.out", delay: 0.1 }
+        menu.querySelectorAll("a, button"),
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: "power3.out", delay: 0.1 }
       );
     } else {
-      gsap.to(overlayRef.current, {
-        opacity: 0,
-        duration: 0.3,
-        ease: "power2.in",
-        onComplete: () => {
-          if (overlayRef.current) gsap.set(overlayRef.current, { display: "none" });
-        },
+      gsap.to(overlay, {
+        opacity: 0, duration: 0.2, ease: "power2.in",
+        onComplete: () => gsap.set(overlay, { display: "none" }),
       });
     }
   }, [menuOpen]);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const navigate = (e: React.MouseEvent, href: string, isPage: boolean) => {
     e.preventDefault();
     setMenuOpen(false);
-    const target = document.querySelector(href);
-    if (target) target.scrollIntoView({ behavior: "smooth" });
+    if (isPage) {
+      router.push(href);
+      return;
+    }
+    const hash = href.replace("/#", "");
+    if (pathname === "/") {
+      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push(href);
+    }
+  };
+
+  const isLinkActive = (href: string, isPage: boolean) => {
+    if (isPage) return pathname === href;
+    const hash = href.replace("/#", "");
+    return pathname === "/" && active === hash;
   };
 
   return (
@@ -87,24 +96,24 @@ export default function Navbar() {
       >
         {/* Logo */}
         <a
-          href="#"
-          onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-          className="font-serif text-2xl font-light tracking-widest text-cream"
+          href="/"
+          onClick={(e) => { e.preventDefault(); router.push("/"); }}
+          className="font-serif text-2xl font-light tracking-widest text-cream hover:text-cream/80 transition-colors"
         >
           myrk<span className="text-gold">.</span>
         </a>
 
-        {/* Desktop nav */}
+        {/* Desktop links */}
         <ul className="hidden md:flex items-center gap-8">
-          {navLinks.map(({ label, href }) => (
+          {navLinks.map(({ label, href, isPage }) => (
             <li key={href}>
               <a
                 href={href}
-                onClick={(e) => handleNavClick(e, href)}
-                className={`font-sans text-sm tracking-widest uppercase transition-colors duration-300 ${
-                  activeSection === href.replace("#", "")
+                onClick={(e) => navigate(e, href, isPage)}
+                className={`font-sans text-xs tracking-[0.2em] uppercase transition-colors duration-300 ${
+                  isLinkActive(href, isPage)
                     ? "text-gold"
-                    : "text-cream/70 hover:text-cream"
+                    : "text-cream/60 hover:text-cream"
                 }`}
               >
                 {label}
@@ -113,42 +122,30 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Hamburger */}
+        {/* Hamburger — 44px tap target */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden flex flex-col gap-[5px] p-2 z-50 relative"
+          className="md:hidden flex flex-col justify-center items-end gap-[5px] w-11 h-11 z-[60] relative"
           aria-label="Toggle menu"
         >
-          <span
-            className={`block h-[1px] bg-cream transition-all duration-300 ${
-              menuOpen ? "w-6 rotate-45 translate-y-[6px]" : "w-6"
-            }`}
-          />
-          <span
-            className={`block h-[1px] bg-cream transition-all duration-300 ${
-              menuOpen ? "opacity-0 w-6" : "w-4"
-            }`}
-          />
-          <span
-            className={`block h-[1px] bg-cream transition-all duration-300 ${
-              menuOpen ? "w-6 -rotate-45 -translate-y-[6px]" : "w-6"
-            }`}
-          />
+          <span className={`block h-px bg-cream transition-all duration-300 ${menuOpen ? "w-6 rotate-45 translate-y-[6px]" : "w-6"}`} />
+          <span className={`block h-px bg-cream transition-all duration-300 ${menuOpen ? "opacity-0 w-6" : "w-4"}`} />
+          <span className={`block h-px bg-cream transition-all duration-300 ${menuOpen ? "w-6 -rotate-45 -translate-y-[6px]" : "w-6"}`} />
         </button>
       </nav>
 
-      {/* Mobile overlay */}
+      {/* Mobile full-screen overlay */}
       <div
         ref={overlayRef}
-        className="fixed inset-0 z-40 bg-[#080808] flex-col items-center justify-center hidden"
+        className="fixed inset-0 z-[55] bg-[#080808] flex-col items-center justify-center hidden"
       >
-        <div ref={menuRef} className="flex flex-col items-center gap-8">
-          {navLinks.map(({ label, href }) => (
+        <div ref={menuRef} className="flex flex-col items-center gap-7">
+          {navLinks.map(({ label, href, isPage }) => (
             <a
               key={href}
               href={href}
-              onClick={(e) => handleNavClick(e, href)}
-              className="font-serif text-5xl font-light text-cream hover:text-gold transition-colors duration-300"
+              onClick={(e) => navigate(e, href, isPage)}
+              className="font-serif text-[2.8rem] font-light text-cream hover:text-gold transition-colors duration-300"
             >
               {label}
             </a>

@@ -59,12 +59,13 @@ export default function ParticleCanvas() {
     const sprite = new THREE.CanvasTexture(canvas2d);
 
     const material = new THREE.PointsMaterial({
-      size: 0.8,
+      size: 1.6,
       map: sprite,
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.85,
+      opacity: 0.7,
+      sizeAttenuation: true,
     });
 
     const particles = new THREE.Points(geometry, material);
