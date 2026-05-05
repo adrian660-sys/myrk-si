@@ -7,13 +7,13 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const cities = [
-  { name: "Berlin", country: "Germany", flag: "🇩🇪" },
-  { name: "Copenhagen", country: "Denmark", flag: "🇩🇰" },
-  { name: "Bratislava", country: "Slovakia", flag: "🇸🇰" },
-  { name: "Zurich", country: "Switzerland", flag: "🇨🇭" },
-  { name: "Stockholm", country: "Sweden", flag: "🇸🇪" },
-  { name: "Prague", country: "Czechia", flag: "🇨🇿" },
-  { name: "Zagreb", country: "Croatia", flag: "🇭🇷" },
+  { name: "Berlin", country: "Germany", code: "DE" },
+  { name: "Copenhagen", country: "Denmark", code: "DK" },
+  { name: "Bratislava", country: "Slovakia", code: "SK" },
+  { name: "Zurich", country: "Switzerland", code: "CH" },
+  { name: "Stockholm", country: "Sweden", code: "SE" },
+  { name: "Prague", country: "Czechia", code: "CZ" },
+  { name: "Zagreb", country: "Croatia", code: "HR" },
 ];
 
 const counters = [
@@ -122,16 +122,24 @@ export default function TravelSection() {
 
         {/* City cards */}
         <div ref={cardsRef} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
-          {cities.map(({ name, country, flag }) => (
+          {cities.map(({ name, country, code }) => (
             <div
               key={name}
               className="city-card group relative border border-dark/10 p-6 hover:-translate-y-1 transition-transform duration-300 cursor-default overflow-hidden"
             >
               {/* Gold underline on hover */}
-              <span className="absolute bottom-0 left-0 h-[2px] w-0 bg-gold group-hover:w-full transition-all duration-400" />
-              <div className="text-3xl mb-3">{flag}</div>
-              <p className="font-serif text-xl font-light text-dark mb-0.5">{name}</p>
-              <p className="font-sans text-xs text-dark/40 tracking-wider uppercase">{country}</p>
+              <span aria-hidden="true" className="absolute bottom-0 left-0 h-[2px] w-0 bg-gold group-hover:w-full transition-all duration-[400ms]" />
+              {/* Country code corner stamp */}
+              <span className="absolute top-4 right-4 font-serif italic text-sm tracking-wider text-[#c9a84c]/70">
+                {code}
+              </span>
+              <div className="flex items-baseline gap-2 mt-2 mb-1">
+                <span aria-hidden="true" className="block w-5 h-px bg-gold/50" />
+                <p className="font-serif text-xl font-light text-dark leading-none">{name}</p>
+              </div>
+              <p className="font-sans text-[11px] text-dark/45 tracking-[0.2em] uppercase mt-2">
+                {country}
+              </p>
             </div>
           ))}
         </div>

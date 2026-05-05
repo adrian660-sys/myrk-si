@@ -78,26 +78,25 @@ export default function ContactSection() {
                 </span>
                 <span className="font-sans text-sm">adrian@myrk.si</span>
               </a>
-              <a
-                href="#"
-                className="flex items-center gap-3 text-cream/60 hover:text-cream transition-colors duration-300 group min-h-[44px]"
-              >
-                <span className="w-9 h-9 shrink-0 rounded-full border border-cream/10 flex items-center justify-center group-hover:border-gold/40 transition-colors">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1" />
-                    <path d="M4 6v4M4 4.5v.01M6 6v4M6 7a2 2 0 0 1 4 0v3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-                  </svg>
+              <div className="flex items-center gap-3 text-cream/60 min-h-[44px]">
+                <span className="w-9 h-9 shrink-0 rounded-full border border-cream/10 flex items-center justify-center">
+                  <span className="relative flex w-2 h-2">
+                    <span aria-hidden="true" className="absolute inline-flex h-full w-full rounded-full bg-gold/60 opacity-75 animate-pulse-ring" />
+                    <span className="relative inline-flex w-2 h-2 rounded-full bg-gold" />
+                  </span>
                 </span>
-                <span className="font-sans text-sm">LinkedIn (coming soon)</span>
-              </a>
-              <div className="flex items-center gap-3 text-cream/40 min-h-[44px]">
+                <span className="font-sans text-sm">
+                  Currently accepting select projects
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-cream/55 min-h-[44px]">
                 <span className="w-9 h-9 shrink-0 rounded-full border border-cream/10 flex items-center justify-center">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <path d="M7 1C4.79 1 3 2.79 3 5c0 3.5 4 8 4 8s4-4.5 4-8c0-2.21-1.79-4-4-4z" stroke="currentColor" strokeWidth="1" />
                     <circle cx="7" cy="5" r="1.5" stroke="currentColor" strokeWidth="1" />
                   </svg>
                 </span>
-                <span className="font-sans text-sm">Ljubljana, Slovenia</span>
+                <span className="font-sans text-sm">Ljubljana, Slovenia &middot; CET</span>
               </div>
             </div>
           </div>

@@ -47,24 +47,50 @@ export default function AboutSection() {
         */}
         <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-start">
 
-          {/* ── LEFT: photo placeholder ── */}
+          {/* ── LEFT: editorial monogram ── */}
           <div className="anim order-2 md:order-1">
-            <div
-              className="w-full aspect-[4/5] max-w-[400px] flex flex-col items-center justify-center gap-3"
-              style={{ background: "#111111", border: "1px solid #c9a84c" }}
-            >
-              <svg width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
-                <rect x="6" y="6" width="32" height="32" rx="2" stroke="#c9a84c" strokeWidth="1.2" />
-                <circle cx="22" cy="18" r="5.5" stroke="#c9a84c" strokeWidth="1.2" />
-                <path d="M6 36c0-8.284 7.163-11 16-11s16 2.716 16 11" stroke="#c9a84c" strokeWidth="1.2" />
-              </svg>
-              <p className="font-sans text-xs tracking-[0.25em] uppercase text-[#f0e8d5]">
-                Photo coming soon
-              </p>
-              <p className="font-sans text-[11px] tracking-wider text-[#f0e8d5]/35">
-                Replace with adrian.jpg
-              </p>
-            </div>
+            <figure className="relative w-full aspect-[4/5] max-w-[420px] overflow-hidden bg-[#0c0c0c]">
+              {/* Film grain */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none"
+                style={{
+                  backgroundImage:
+                    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.79 0 0 0 0 0.66 0 0 0 0 0.30 0 0 0 1 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
+                }}
+              />
+              {/* Vignette */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,#000_120%)]"
+              />
+              {/* Gold corner brackets */}
+              <span aria-hidden="true" className="absolute top-4 left-4 w-6 h-6 border-t border-l border-gold/55" />
+              <span aria-hidden="true" className="absolute top-4 right-4 w-6 h-6 border-t border-r border-gold/55" />
+              <span aria-hidden="true" className="absolute bottom-4 left-4 w-6 h-6 border-b border-l border-gold/55" />
+              <span aria-hidden="true" className="absolute bottom-4 right-4 w-6 h-6 border-b border-r border-gold/55" />
+
+              {/* Monogram */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 px-6 text-center">
+                <span className="font-serif font-light leading-none tracking-tight text-cream text-[clamp(5rem,13vw,7.5rem)]">
+                  A<span className="text-gold mx-1">·</span>D
+                </span>
+                <span aria-hidden="true" className="block w-12 h-px bg-gold/50" />
+                <div className="flex flex-col items-center gap-1.5">
+                  <span className="font-sans text-[10px] tracking-[0.4em] uppercase text-cream/60">
+                    Adrian Džeka
+                  </span>
+                  <span className="font-serif italic text-xs text-cream/35">
+                    Ljubljana &middot; est. 2017
+                  </span>
+                </div>
+              </div>
+
+              {/* Edition stamp */}
+              <figcaption className="absolute bottom-3 right-4 font-sans text-[9px] tracking-[0.3em] uppercase text-gold/50">
+                myrk &middot; vol. i
+              </figcaption>
+            </figure>
           </div>
 
           {/* ── RIGHT: label + headline + copy + quotes ── */}
