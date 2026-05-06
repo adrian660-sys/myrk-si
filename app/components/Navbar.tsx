@@ -9,7 +9,7 @@ const navLinks = [
   { label: "Sports",  href: "/#sports",  isPage: false },
   { label: "Contact", href: "/#contact", isPage: false },
   { label: "Work",    href: "/work",     isPage: true  },
-  { label: "Blog",    href: "/blog",     isPage: true  },
+  { label: "Notebook", href: "/notebook", isPage: true  },
 ];
 
 export default function Navbar() {

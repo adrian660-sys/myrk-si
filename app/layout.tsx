@@ -17,28 +17,49 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const SITE = "https://myrk.si";
+
 export const metadata: Metadata = {
-  title: "Adrian Džeka — myrk.",
+  metadataBase: new URL(SITE),
+  title: {
+    default: "Adrian Džeka — Project Manager, Ljubljana | myrk.",
+    template: "%s | Adrian Džeka — myrk.",
+  },
   description:
-    "Project manager who reads the room, not just the brief. Based in Ljubljana.",
-  keywords: ["project manager", "Ljubljana", "freelance", "myrk", "Adrian Džeka"],
+    "Adrian Džeka — freelance project manager based in Ljubljana. Tour management, real estate, healthcare ops, live events.",
+  keywords: [
+    "project manager Ljubljana",
+    "freelance project manager Slovenia",
+    "tour manager Slovenia",
+    "production manager Ljubljana",
+    "event manager Slovenia",
+    "Adrian Džeka",
+    "myrk",
+  ],
   authors: [{ name: "Adrian Džeka" }],
+  creator: "Adrian Džeka",
   openGraph: {
-    title: "Adrian Džeka — myrk.",
+    title: "Adrian Džeka — Project Manager, Ljubljana",
     description: "People first. Always.",
-    url: "https://myrk.si",
+    url: SITE,
     siteName: "myrk.",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Adrian Džeka — myrk.",
+    title: "Adrian Džeka — Project Manager, Ljubljana",
     description: "People first. Always.",
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
