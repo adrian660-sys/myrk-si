@@ -5,86 +5,70 @@ import { usePathname, useRouter } from "next/navigation";
 import { gsap } from "gsap";
 
 const navLinks = [
-  { label: "About",   href: "/#about",   isPage: false },
-  { label: "Sports",  href: "/#sports",  isPage: false },
-  { label: "Contact", href: "/#contact", isPage: false },
-  { label: "Work",    href: "/work",     isPage: true  },
-  { label: "Notebook", href: "/notebook", isPage: true  },
+  { label: "Home", href: "/" },
+  { label: "Work", href: "/work" },
+  { label: "Sports", href: "/sports" },
+  { label: "Notebook", href: "/notebook" },
 ];
 
 export default function Navbar() {
-  const [menuOpen, setMenuOpen]   = useState(false);
-  const [scrolled, setScrolled]   = useState(false);
-  const [active, setActive]       = useState("");
-  const menuRef    = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const pathname   = usePathname();
-  const router     = useRouter();
+  const pathname = usePathname();
+  const router = useRouter();
 
-  /* scroll background */
+  /* Background on scroll */
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  /* active section via IntersectionObserver — only on homepage */
-  useEffect(() => {
-    if (pathname !== "/") return;
-    const ids = ["hero", "about", "sports", "contact"];
-    const obs = ids.map((id) => {
-      const el = document.getElementById(id);
-      if (!el) return null;
-      const o = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) setActive(id); },
-        { threshold: 0.4 }
-      );
-      o.observe(el);
-      return o;
-    });
-    return () => obs.forEach((o) => o?.disconnect());
-  }, [pathname]);
-
-  /* mobile overlay animation */
+  /* Mobile overlay animation */
   useEffect(() => {
     const overlay = overlayRef.current;
-    const menu    = menuRef.current;
+    const menu = menuRef.current;
     if (!overlay || !menu) return;
     if (menuOpen) {
       gsap.set(overlay, { display: "flex" });
-      gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power2.out" });
+      gsap.fromTo(
+        overlay,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.25, ease: "power2.out" }
+      );
       gsap.fromTo(
         menu.querySelectorAll("a, button"),
         { y: 30, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.45, stagger: 0.06, ease: "power3.out", delay: 0.1 }
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.45,
+          stagger: 0.06,
+          ease: "power3.out",
+          delay: 0.1,
+        }
       );
     } else {
       gsap.to(overlay, {
-        opacity: 0, duration: 0.2, ease: "power2.in",
+        opacity: 0,
+        duration: 0.2,
+        ease: "power2.in",
         onComplete: () => gsap.set(overlay, { display: "none" }),
       });
     }
   }, [menuOpen]);
 
-  const navigate = (e: React.MouseEvent, href: string, isPage: boolean) => {
+  const navigate = (e: React.MouseEvent, href: string) => {
     e.preventDefault();
     setMenuOpen(false);
-    if (isPage) {
-      router.push(href);
-      return;
-    }
-    const hash = href.replace("/#", "");
-    if (pathname === "/") {
-      document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" });
-    } else {
-      router.push(href);
-    }
+    router.push(href);
   };
 
-  const isLinkActive = (href: string, isPage: boolean) => {
-    if (isPage) return pathname === href;
-    const hash = href.replace("/#", "");
-    return pathname === "/" && active === hash;
+  const isLinkActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname?.startsWith(href + "/");
   };
 
   return (
@@ -97,7 +81,10 @@ export default function Navbar() {
         {/* Logo */}
         <a
           href="/"
-          onClick={(e) => { e.preventDefault(); router.push("/"); }}
+          onClick={(e) => {
+            e.preventDefault();
+            router.push("/");
+          }}
           className="font-serif text-2xl font-light tracking-widest text-cream hover:text-cream/80 transition-colors"
         >
           myrk<span className="text-gold">.</span>
@@ -105,13 +92,13 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <ul className="hidden md:flex items-center gap-8">
-          {navLinks.map(({ label, href, isPage }) => (
+          {navLinks.map(({ label, href }) => (
             <li key={href}>
               <a
                 href={href}
-                onClick={(e) => navigate(e, href, isPage)}
+                onClick={(e) => navigate(e, href)}
                 className={`font-sans text-xs tracking-[0.2em] uppercase transition-colors duration-300 ${
-                  isLinkActive(href, isPage)
+                  isLinkActive(href)
                     ? "text-gold"
                     : "text-cream/60 hover:text-cream"
                 }`}
@@ -122,15 +109,27 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Hamburger — 44px tap target */}
+        {/* Hamburger (44px tap target) */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="md:hidden flex flex-col justify-center items-end gap-[5px] w-11 h-11 z-[60] relative"
           aria-label="Toggle menu"
         >
-          <span className={`block h-px bg-cream transition-all duration-300 ${menuOpen ? "w-6 rotate-45 translate-y-[6px]" : "w-6"}`} />
-          <span className={`block h-px bg-cream transition-all duration-300 ${menuOpen ? "opacity-0 w-6" : "w-4"}`} />
-          <span className={`block h-px bg-cream transition-all duration-300 ${menuOpen ? "w-6 -rotate-45 -translate-y-[6px]" : "w-6"}`} />
+          <span
+            className={`block h-px bg-cream transition-all duration-300 ${
+              menuOpen ? "w-6 rotate-45 translate-y-[6px]" : "w-6"
+            }`}
+          />
+          <span
+            className={`block h-px bg-cream transition-all duration-300 ${
+              menuOpen ? "opacity-0 w-6" : "w-4"
+            }`}
+          />
+          <span
+            className={`block h-px bg-cream transition-all duration-300 ${
+              menuOpen ? "w-6 -rotate-45 -translate-y-[6px]" : "w-6"
+            }`}
+          />
         </button>
       </nav>
 
@@ -140,12 +139,16 @@ export default function Navbar() {
         className="fixed inset-0 z-[55] bg-[#080808] flex-col items-center justify-center hidden"
       >
         <div ref={menuRef} className="flex flex-col items-center gap-7">
-          {navLinks.map(({ label, href, isPage }) => (
+          {navLinks.map(({ label, href }) => (
             <a
               key={href}
               href={href}
-              onClick={(e) => navigate(e, href, isPage)}
-              className="font-serif text-[2.8rem] font-light text-cream hover:text-gold transition-colors duration-300"
+              onClick={(e) => navigate(e, href)}
+              className={`font-serif text-[2.8rem] font-light transition-colors duration-300 ${
+                isLinkActive(href)
+                  ? "text-gold"
+                  : "text-cream hover:text-gold"
+              }`}
             >
               {label}
             </a>

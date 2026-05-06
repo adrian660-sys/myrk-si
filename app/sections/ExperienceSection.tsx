@@ -19,7 +19,7 @@ const jobs: Job[] = [
   {
     company: "Corner Invest",
     role: "Project Manager",
-    description: "Leading end-to-end project delivery for a real estate investment firm. Coordinating stakeholders, managing timelines, and ensuring projects close on budget.",
+    description: "Leading end-to-end project delivery. Coordinating stakeholders, managing timelines, and ensuring projects close on budget.",
     period: "Jan 2025 – Present",
     type: "Project Management",
     badge: "Freelance",
@@ -150,9 +150,13 @@ export default function ExperienceSection() {
           <p className="font-sans text-xs tracking-[0.35em] uppercase text-gold mb-3">
             Experience
           </p>
-          <h2 className="font-serif text-[clamp(2.5rem,5vw,4.5rem)] font-light text-cream leading-tight">
-            Every hat.<br />Same standard.
+          <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] font-light text-cream leading-tight">
+            The full record.
           </h2>
+          <p className="font-sans text-[15px] text-cream/50 leading-relaxed max-w-xl mt-4">
+            Ten roles. Five categories. One standard. Filter to see the cuts that
+            matter to you.
+          </p>
         </div>
 
         {/* Filter tabs — #3 fix: always visible, horizontal wrap */}

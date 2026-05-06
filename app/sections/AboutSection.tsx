@@ -99,28 +99,31 @@ export default function AboutSection() {
               About
             </p>
             <h2 className="font-serif text-[clamp(2.4rem,5vw,4.5rem)] font-light leading-[1.05] text-[#1a1a1a]">
-              Built from<br />a dark place.
+              How you do one thing<br />
+              <span className="text-[#c9a84c]">is how you do everything.</span>
             </h2>
             <div className="w-10 h-px bg-[#1a1a1a]/15" />
             <p className="font-serif text-base italic font-light text-[#1a1a1a]/45 leading-relaxed">
-              "I run myrk. because I choose who I work with."
+              &ldquo;I run myrk. because I choose who I work with.&rdquo;
             </p>
 
             <div className="flex flex-col gap-4 mt-1">
-              <p className="font-sans text-[15px] leading-[1.75] text-[#1a1a1a]/65">
-                I'm Adrian — project manager, sole proprietor, and sports president based in Ljubljana. Before I ask what you want, I need to understand who you are. That's how I work.
+              <p className="font-sans text-[17px] leading-[1.75] text-[#1a1a1a]/70">
+                I&apos;m Adrian — project manager, sole proprietor, and sports
+                president based in Ljubljana. Before I ask what you want, I
+                need to understand who you are. That&apos;s how I work.
               </p>
-              <p className="font-sans text-[15px] leading-[1.75] text-[#1a1a1a]/65">
-                I built Šiškarji from zero. I managed concert tours from the side of the stage. I flew solo to Berlin for an interview just to see what I was made of. Everything I know, I learned by doing.
+              <p className="font-sans text-[17px] leading-[1.75] text-[#1a1a1a]/70">
+                I built Šiškarji from zero. I managed concert tours from the
+                side of the stage. I flew solo to Berlin for an interview just
+                to see what I was made of. Everything I know, I learned by
+                doing.
               </p>
-              <p className="font-sans text-[15px] leading-[1.75] text-[#1a1a1a]/65">
-                When a project goes wrong, I don't look for someone to blame — I call the team and we fix it together.
+              <p className="font-sans text-[17px] leading-[1.75] text-[#1a1a1a]/70">
+                When a project goes wrong, I don&apos;t look for someone to
+                blame — I call the team and we fix it together.
               </p>
             </div>
-
-            <p className="font-serif text-[1.1rem] italic font-light text-[#c9a84c] leading-snug mt-1">
-              "How you do one thing is how you do everything."
-            </p>
           </div>
 
         </div>

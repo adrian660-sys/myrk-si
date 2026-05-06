@@ -76,13 +76,14 @@ export default function BlogSection() {
       <div className="max-w-7xl mx-auto">
         <div ref={headlineRef} className="mb-14 max-w-2xl">
           <p className="font-sans text-xs tracking-[0.35em] uppercase text-[#c9a84c] mb-3">
-            The Notebook
+            Essays
           </p>
-          <h2 className="font-serif text-[clamp(2.5rem,5vw,4.5rem)] font-light text-dark leading-tight mb-5">
-            Real stories.<br />Not LinkedIn posts.
+          <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] font-light text-dark leading-tight mb-5">
+            Three pieces, written slowly.
           </h2>
-          <p className="font-sans text-[15px] text-dark/55 leading-relaxed">
-            Three essays, written slowly. Each one earns its publish date — no hot takes, no engagement bait.
+          <p className="font-sans text-[16px] text-dark/60 leading-relaxed">
+            Each one earns its publish date — no hot takes, no engagement bait.
+            Stories from the road, the locker room, and the production office.
           </p>
         </div>
 
