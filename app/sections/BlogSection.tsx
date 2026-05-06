@@ -81,7 +81,7 @@ export default function BlogSection() {
           <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] font-light text-dark leading-tight mb-5">
             Three pieces, written slowly.
           </h2>
-          <p className="font-sans text-[16px] text-dark/60 leading-relaxed">
+          <p className="font-sans text-[16px] t-ink-muted leading-relaxed">
             Each one earns its publish date — no hot takes, no engagement bait.
             Stories from the road, the locker room, and the production office.
           </p>
@@ -91,7 +91,7 @@ export default function BlogSection() {
           {posts.map(({ no, tag, title, excerpt, estimated }) => (
             <article
               key={title}
-              className="blog-card group relative bg-white hover:bg-[#f9f6f0] transition-colors duration-300 p-8 flex flex-col border-r border-dark/10 last:border-r-0"
+              className="blog-card group relative bg-[#f9f6f0] hover:bg-white transition-colors duration-300 p-8 flex flex-col border-r border-dark/10 last:border-r-0"
             >
               <div className="flex items-center justify-between mb-6">
                 <span className="font-serif italic text-sm text-[#c9a84c]/80">
@@ -105,7 +105,7 @@ export default function BlogSection() {
               <h3 className="font-serif text-xl font-light text-dark leading-snug mb-4 group-hover:text-[#1a1a1a] transition-colors">
                 {title}
               </h3>
-              <p className="font-sans text-[13px] text-dark/50 leading-relaxed flex-1">
+              <p className="font-sans text-[13px] t-ink-muted leading-relaxed flex-1">
                 {excerpt}
               </p>
 

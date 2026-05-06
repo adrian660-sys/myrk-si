@@ -117,7 +117,7 @@ export default function PageHero({
         </h1>
 
         {sub && (
-          <p className="reveal font-sans text-[16px] md:text-[17px] text-cream/55 font-light max-w-xl leading-relaxed">
+          <p className="reveal font-sans text-[16px] md:text-[17px] t-cream-muted font-light max-w-xl leading-relaxed">
             {sub}
           </p>
         )}

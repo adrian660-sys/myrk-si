@@ -141,19 +141,19 @@ export default function ExperienceSection() {
     <section
       id="experience"
       ref={sectionRef}
-      className="section-dark py-24 md:py-36 px-6 md:px-14 overflow-hidden"
+      className="section-light py-24 md:py-36 px-6 md:px-14 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
         <div ref={headlineRef} className="mb-10">
-          <p className="font-sans text-xs tracking-[0.35em] uppercase text-gold mb-3">
+          <p className="font-sans text-xs tracking-[0.35em] uppercase text-[#c9a84c] mb-3">
             Experience
           </p>
-          <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] font-light text-cream leading-tight">
+          <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] font-light text-dark leading-tight">
             The full record.
           </h2>
-          <p className="font-sans text-[15px] text-cream/50 leading-relaxed max-w-xl mt-4">
+          <p className="font-sans text-[15px] t-ink-muted leading-relaxed max-w-xl mt-4">
             Ten roles. Five categories. One standard. Filter to see the cuts that
             matter to you.
           </p>
@@ -167,8 +167,8 @@ export default function ExperienceSection() {
               onClick={() => setActive(f)}
               className={`font-sans text-xs tracking-[0.2em] uppercase px-5 py-2.5 border transition-all duration-300 ${
                 active === f
-                  ? "border-gold text-gold bg-gold/10"
-                  : "border-cream/20 text-cream/50 hover:border-cream/40 hover:text-cream/80"
+                  ? "border-[#c9a84c]/60 text-[#c9a84c] bg-[#c9a84c]/10"
+                  : "border-dark/15 text-dark/55 hover:border-dark/30 hover:text-dark/80"
               }`}
             >
               {f}
@@ -177,37 +177,37 @@ export default function ExperienceSection() {
         </div>
 
         {/* Job list */}
-        <div ref={listRef} className="flex flex-col divide-y divide-cream/5 border border-cream/5">
+        <div ref={listRef} className="flex flex-col divide-y divide-dark/10 border border-dark/10 bg-[#f9f6f0]">
           {filtered.map((job) => (
             <div
               key={`${job.company}-${job.role}`}
-              className="job-card group px-6 py-6 bg-cream/[0.02] hover:bg-cream/[0.05] transition-colors duration-300"
+              className="job-card group px-6 py-6 bg-[#f9f6f0] hover:bg-white transition-colors duration-300"
             >
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-6">
                 {/* Left: company + role + description */}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2.5 mb-1">
-                    <h3 className="font-sans font-medium text-[15px] text-cream">
+                    <h3 className="font-sans font-medium text-[15px] text-dark">
                       {job.company}
                     </h3>
                     {job.badge && (
-                      <span className="font-sans text-[10px] tracking-widest uppercase text-gold/70 border border-gold/25 px-2 py-0.5 rounded-full">
+                      <span className="font-sans text-[10px] tracking-widest uppercase text-[#c9a84c]/80 border border-[#c9a84c]/30 px-2 py-0.5 rounded-full">
                         {job.badge}
                       </span>
                     )}
                   </div>
-                  <p className="font-sans text-sm text-gold/60 mb-2">{job.role}</p>
-                  <p className="font-sans text-[13px] leading-relaxed text-cream/40">
+                  <p className="font-sans text-sm text-[#c9a84c]/75 mb-2">{job.role}</p>
+                  <p className="font-sans text-[13px] leading-relaxed t-ink-muted">
                     {job.description}
                   </p>
                 </div>
 
                 {/* Right: period + type */}
                 <div className="shrink-0 sm:text-right">
-                  <p className="font-sans text-[12px] text-cream/30 tracking-wider whitespace-nowrap">
+                  <p className="font-sans text-[12px] text-dark/45 tracking-wider whitespace-nowrap">
                     {job.period}
                   </p>
-                  <p className="font-sans text-[10px] tracking-[0.15em] uppercase text-gold/25 mt-1">
+                  <p className="font-sans text-[10px] tracking-[0.15em] uppercase text-dark/35 mt-1">
                     {job.type}
                   </p>
                 </div>

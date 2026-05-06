@@ -4,7 +4,7 @@
 
 :root {
   --bg-dark: #080808;
-  --bg-light: #ffffff;
+  --bg-light: #f9f6f0;
   --gold: #c9a84c;
   --cream: #f0e8d5;
   --dark-text: #1a1a1a;
@@ -61,12 +61,39 @@ section[id] {
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  /* Typography tones (keep emphasis consistent across site) */
+  .t-ink {
+    color: #1a1a1a;
+  }
+  .t-ink-body {
+    color: rgb(26 26 26 / 0.72);
+  }
+  .t-ink-muted {
+    color: rgb(26 26 26 / 0.56);
+  }
+  .t-ink-faint {
+    color: rgb(26 26 26 / 0.4);
+  }
+  .t-cream {
+    color: #f0e8d5;
+  }
+  .t-cream-body {
+    color: rgb(240 232 213 / 0.72);
+  }
+  .t-cream-muted {
+    color: rgb(240 232 213 / 0.56);
+  }
+  .t-cream-faint {
+    color: rgb(240 232 213 / 0.4);
+  }
+
   .section-dark {
     background-color: #080808;
     color: #f0e8d5;
   }
   .section-light {
-    background-color: #ffffff;
+    background-color: var(--bg-light);
     color: #1a1a1a;
   }
 }

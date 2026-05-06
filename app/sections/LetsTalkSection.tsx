@@ -83,7 +83,7 @@ export default function LetsTalkSection() {
             <br />
             it&apos;s handled.
           </h2>
-          <p className="reveal font-sans text-[16px] text-cream/55 leading-relaxed max-w-xl">
+          <p className="reveal font-sans text-[16px] t-cream-muted leading-relaxed max-w-xl">
             Before I ask what you need, I want to understand who you are. If you
             have a vision and need someone to execute it — let&apos;s talk.
           </p>
@@ -94,7 +94,7 @@ export default function LetsTalkSection() {
           <div className="flex flex-col gap-4">
             <a
               href="mailto:adrian@myrk.si"
-              className="flex items-center gap-3 text-cream/75 hover:text-cream transition-colors duration-300 group min-h-[44px]"
+              className="flex items-center gap-3 t-cream-body hover:text-cream transition-colors duration-300 group min-h-[44px]"
             >
               <span className="w-9 h-9 shrink-0 rounded-full border border-cream/15 flex items-center justify-center group-hover:border-gold/50 transition-colors">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -109,7 +109,7 @@ export default function LetsTalkSection() {
               <span className="font-sans text-[15px]">adrian@myrk.si</span>
             </a>
 
-            <div className="flex items-center gap-3 text-cream/75 min-h-[44px]">
+            <div className="flex items-center gap-3 t-cream-body min-h-[44px]">
               <span className="w-9 h-9 shrink-0 rounded-full border border-cream/15 flex items-center justify-center">
                 <span className="relative flex w-2 h-2">
                   <span
@@ -124,7 +124,7 @@ export default function LetsTalkSection() {
               </span>
             </div>
 
-            <div className="flex items-center gap-3 text-cream/55 min-h-[44px]">
+            <div className="flex items-center gap-3 t-cream-muted min-h-[44px]">
               <span className="w-9 h-9 shrink-0 rounded-full border border-cream/15 flex items-center justify-center">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                   <path
@@ -147,10 +147,10 @@ export default function LetsTalkSection() {
             </div>
 
             <div className="mt-8 pt-8 border-t border-cream/10 flex flex-col gap-1.5">
-              <p className="font-sans text-[10px] tracking-[0.3em] uppercase text-cream/30">
+              <p className="font-sans text-[10px] tracking-[0.3em] uppercase t-cream-faint">
                 Response time
               </p>
-              <p className="font-serif text-2xl font-light text-cream/85">
+              <p className="font-serif text-2xl font-light t-cream-body">
                 Within 24 hours.
               </p>
             </div>
@@ -174,7 +174,7 @@ export default function LetsTalkSection() {
                 <p className="font-serif text-2xl font-light text-cream">
                   Message sent.
                 </p>
-                <p className="font-sans text-sm text-cream/40">
+                <p className="font-sans text-sm t-cream-faint">
                   I&apos;ll be in touch.
                 </p>
               </div>
@@ -185,7 +185,7 @@ export default function LetsTalkSection() {
                 className="flex flex-col gap-7"
               >
                 <div className="form-item">
-                  <label className="font-sans text-[10px] tracking-[0.3em] uppercase text-cream/30 mb-2 block">
+                  <label className="font-sans text-[10px] tracking-[0.3em] uppercase t-cream-faint mb-2 block">
                     Name
                   </label>
                   <input
@@ -200,7 +200,7 @@ export default function LetsTalkSection() {
                   />
                 </div>
                 <div className="form-item">
-                  <label className="font-sans text-[10px] tracking-[0.3em] uppercase text-cream/30 mb-2 block">
+                  <label className="font-sans text-[10px] tracking-[0.3em] uppercase t-cream-faint mb-2 block">
                     Email
                   </label>
                   <input
@@ -215,7 +215,7 @@ export default function LetsTalkSection() {
                   />
                 </div>
                 <div className="form-item">
-                  <label className="font-sans text-[10px] tracking-[0.3em] uppercase text-cream/30 mb-2 block">
+                  <label className="font-sans text-[10px] tracking-[0.3em] uppercase t-cream-faint mb-2 block">
                     Message
                   </label>
                   <textarea

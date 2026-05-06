@@ -74,58 +74,58 @@ export default function WorkProjectsSection() {
     <section
       id="projects"
       ref={sectionRef}
-      className="bg-[#080808] py-24 md:py-32 px-6 md:px-14 overflow-hidden"
+      className="section-light py-24 md:py-32 px-6 md:px-14 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
         <div className="mb-12">
-          <p className="font-sans text-xs tracking-[0.35em] uppercase text-gold mb-3">
+          <p className="font-sans text-xs tracking-[0.35em] uppercase text-[#c9a84c] mb-3">
             Projects
           </p>
-          <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] font-light text-cream leading-tight">
+          <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] font-light text-dark leading-tight">
             Selected work.
           </h2>
         </div>
 
-        <div className="flex flex-col divide-y divide-cream/5 border border-cream/5">
+        <div className="flex flex-col divide-y divide-dark/10 border border-dark/10 bg-[#f9f6f0]">
           {projects.map(({ label, title, description, tags, status }, i) => (
             <div
               key={title}
-              className="proj-card group relative px-6 py-8 hover:bg-cream/[0.03] transition-colors duration-300"
+              className="proj-card group relative px-6 py-8 hover:bg-white transition-colors duration-300"
             >
               {/* Index */}
-              <span className="absolute top-8 right-6 font-sans text-[10px] tracking-[0.2em] uppercase text-cream/20">
+              <span className="absolute top-8 right-6 font-sans text-[10px] tracking-[0.2em] uppercase text-dark/30">
                 {String(i + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}
               </span>
 
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pr-16 sm:pr-20">
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2.5 mb-2">
-                    <span className="font-sans text-[10px] tracking-[0.25em] uppercase text-gold/70">
+                    <span className="font-sans text-[10px] tracking-[0.25em] uppercase text-[#c9a84c]/80">
                       {label}
                     </span>
                     <span
                       className={`font-sans text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-full border ${
                         status === "Completed"
-                          ? "border-green-500/20 text-green-400/60"
+                          ? "border-green-600/25 text-green-700/80"
                           : status === "Ongoing"
-                          ? "border-gold/25 text-gold/60"
-                          : "border-cream/15 text-cream/40"
+                          ? "border-[#c9a84c]/35 text-[#c9a84c]/80"
+                          : "border-dark/10 text-dark/45"
                       }`}
                     >
                       {status}
                     </span>
                   </div>
-                  <h3 className="font-serif text-[1.45rem] font-light text-cream mb-3 leading-snug">
+                  <h3 className="font-serif text-[1.45rem] font-light text-dark mb-3 leading-snug">
                     {title}
                   </h3>
-                  <p className="font-sans text-[14px] text-cream/55 leading-[1.7] max-w-2xl">
+                  <p className="font-sans text-[14px] t-ink-muted leading-[1.7] max-w-2xl">
                     {description}
                   </p>
                   <div className="flex flex-wrap gap-2 mt-4">
                     {tags.map((tag) => (
                       <span
                         key={tag}
-                        className="font-sans text-[10px] tracking-wider uppercase text-cream/35 border border-cream/10 px-2.5 py-1"
+                        className="font-sans text-[10px] tracking-wider uppercase text-dark/45 border border-dark/10 px-2.5 py-1 bg-[#f9f6f0]"
                       >
                         {tag}
                       </span>

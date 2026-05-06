@@ -106,7 +106,7 @@ export default function TravelSection() {
           <h2 className="font-serif text-[clamp(2.5rem,5vw,4.5rem)] font-light text-dark leading-tight mb-5">
             7 cities.<br />Every one a reason.
           </h2>
-          <p className="font-sans text-[15px] text-dark/60 leading-relaxed">
+          <p className="font-sans text-[15px] t-ink-muted leading-relaxed">
             In the last year and a half, Europe has been my office. Not tourism — every trip was a meeting, a project, a next step.
           </p>
         </div>

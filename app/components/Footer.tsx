@@ -34,7 +34,7 @@ export default function Footer() {
           myrk<span className="text-gold">.</span>
         </a>
 
-        <p className="font-sans text-xs text-cream/25 tracking-wider">
+        <p className="font-sans text-xs t-cream-faint tracking-wider">
           © 2025 Adrian Džeka · Ljubljana, SI ·{" "}
           <a
             href="mailto:adrian@myrk.si"
@@ -50,7 +50,7 @@ export default function Footer() {
               key={href}
               href={href}
               onClick={(e) => handleClick(e, href)}
-              className="font-sans text-xs text-cream/35 hover:text-cream/65 tracking-[0.15em] uppercase transition-colors duration-300"
+              className="font-sans text-xs t-cream-faint hover:text-cream/65 tracking-[0.15em] uppercase transition-colors duration-300"
             >
               {label}
             </a>

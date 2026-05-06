@@ -133,16 +133,16 @@ export default function SportsSection() {
       id="sports-body"
       data-section
       ref={sectionRef}
-      className="section-dark relative py-24 md:py-32 px-6 md:px-14 overflow-hidden"
+      className="section-light relative py-24 md:py-32 px-6 md:px-14 overflow-hidden"
       style={{ scrollMarginTop: "80px" }}
     >
       <div className="relative z-10 max-w-7xl mx-auto" ref={contentRef}>
         {/* Eyebrow */}
         <div className="mb-14 reveal">
-          <p className="font-sans text-xs tracking-[0.35em] uppercase text-gold mb-3">
+          <p className="font-sans text-xs tracking-[0.35em] uppercase text-[#c9a84c] mb-3">
             By the numbers
           </p>
-          <h2 className="font-serif text-[clamp(1.8rem,3.5vw,2.6rem)] font-light text-cream leading-tight max-w-2xl">
+          <h2 className="font-serif text-[clamp(1.8rem,3.5vw,2.6rem)] font-light text-dark leading-tight max-w-2xl">
             Šiškarji — eight years of building a club that runs on culture
             instead of contracts.
           </h2>
@@ -154,16 +154,16 @@ export default function SportsSection() {
             {stats.map(({ value, label }) => (
               <div
                 key={label}
-                className="group relative w-32 h-32 rounded-full border border-gold/25 flex flex-col items-center justify-center hover:border-gold/60 transition-colors duration-500"
+                className="group relative w-32 h-32 rounded-full border border-[#c9a84c]/25 flex flex-col items-center justify-center hover:border-[#c9a84c]/60 transition-colors duration-500"
               >
                 <span
                   aria-hidden="true"
-                  className="absolute inset-0 rounded-full blur-xl bg-gold/0 group-hover:bg-gold/[0.08] transition-colors duration-500"
+                  className="absolute inset-0 rounded-full blur-xl bg-[#c9a84c]/0 group-hover:bg-[#c9a84c]/[0.08] transition-colors duration-500"
                 />
                 <span className="font-serif text-3xl font-light text-gold relative">
                   {value}
                 </span>
-                <span className="font-sans text-[10px] tracking-[0.2em] uppercase text-cream/45 mt-1 relative">
+                <span className="font-sans text-[10px] tracking-[0.2em] uppercase text-dark/45 mt-1 relative">
                   {label}
                 </span>
               </div>
@@ -172,16 +172,16 @@ export default function SportsSection() {
 
           {/* Right — text */}
           <div className="flex flex-col gap-6 reveal">
-            <p className="font-sans text-[16px] leading-[1.75] text-cream/75">
+            <p className="font-sans text-[16px] leading-[1.75] text-dark/70">
               I co-founded Šiškarji in 2017 — football, basketball, volleyball,
               floorball. Now focused on floorball. Building this taught me more
               about leadership than any job title.
             </p>
-            <p className="font-sans text-[16px] leading-[1.75] text-cream/75">
+            <p className="font-sans text-[16px] leading-[1.75] text-dark/70">
               Running a sports association while working full-time isn&apos;t
               chaos. It&apos;s a system.
             </p>
-            <p className="font-sans text-[16px] leading-[1.75] text-cream/75">
+            <p className="font-sans text-[16px] leading-[1.75] text-dark/70">
               The locker room and the boardroom aren&apos;t different. Both
               need someone who holds the vision when things get heavy.
             </p>
@@ -198,7 +198,7 @@ export default function SportsSection() {
               {sportTags.map(({ Icon, label }) => (
                 <span
                   key={label}
-                  className="group inline-flex items-center gap-2.5 font-sans text-sm px-4 py-2 border border-cream/15 text-cream/70 rounded-full hover:border-gold/45 hover:text-cream transition-all duration-300 cursor-default"
+                  className="group inline-flex items-center gap-2.5 font-sans text-sm px-4 py-2 border border-dark/10 text-dark/65 bg-[#f9f6f0] rounded-full hover:border-[#c9a84c]/45 hover:text-dark transition-all duration-300 cursor-default"
                 >
                   <Icon className="text-gold/75 group-hover:text-gold transition-colors duration-300" />
                   <span className="tracking-wide">{label}</span>

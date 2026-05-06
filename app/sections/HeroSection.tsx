@@ -111,7 +111,7 @@ export default function HeroSection() {
           </span>
         </h1>
 
-        <p className="reveal font-sans text-[15px] md:text-[17px] text-cream/55 font-light max-w-md mb-9 leading-relaxed">
+        <p className="reveal font-sans text-[15px] md:text-[17px] t-cream-muted font-light max-w-md mb-9 leading-relaxed">
           Project manager who reads the room, not just the brief.
         </p>
 

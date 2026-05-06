@@ -36,7 +36,7 @@ export default function AboutSection() {
       id="about"
       data-section
       ref={sectionRef}
-      className="bg-white py-12 md:py-20 px-6 md:px-14 overflow-hidden"
+      className="section-light py-12 md:py-20 px-6 md:px-14 overflow-hidden"
       style={{ scrollMarginTop: "80px" }}
     >
       <div className="max-w-7xl mx-auto">
