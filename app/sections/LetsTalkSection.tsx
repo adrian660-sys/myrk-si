@@ -15,6 +15,8 @@ export default function LetsTalkSection() {
   const headlineRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
 
   useEffect(() => {
@@ -47,9 +49,36 @@ export default function LetsTalkSection() {
     return () => ctx.revert();
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = (await res.json().catch(() => null)) as
+        | { ok?: boolean; error?: string }
+        | null;
+
+      if (!res.ok || !data?.ok) {
+        setError(data?.error || "Something went wrong. Please email me instead.");
+        setSubmitting(false);
+        return;
+      }
+
+      setSent(true);
+      setForm({ name: "", email: "", message: "" });
+    } catch {
+      setError("Network error. Please email me instead.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputClass =
@@ -184,6 +213,19 @@ export default function LetsTalkSection() {
                 onSubmit={handleSubmit}
                 className="flex flex-col gap-7"
               >
+                {error && (
+                  <div className="form-item border border-gold/25 bg-gold/10 px-5 py-4">
+                    <p className="font-sans text-[12px] t-cream-body leading-relaxed">
+                      {error}{" "}
+                      <a
+                        href="mailto:adrian@myrk.si"
+                        className="underline underline-offset-4 hover:text-cream transition-colors"
+                      >
+                        adrian@myrk.si
+                      </a>
+                    </p>
+                  </div>
+                )}
                 <div className="form-item">
                   <label className="font-sans text-[10px] tracking-[0.3em] uppercase t-cream-faint mb-2 block">
                     Name
@@ -197,6 +239,7 @@ export default function LetsTalkSection() {
                       setForm({ ...form, name: e.target.value })
                     }
                     className={inputClass}
+                    disabled={submitting}
                   />
                 </div>
                 <div className="form-item">
@@ -212,6 +255,7 @@ export default function LetsTalkSection() {
                       setForm({ ...form, email: e.target.value })
                     }
                     className={inputClass}
+                    disabled={submitting}
                   />
                 </div>
                 <div className="form-item">
@@ -227,18 +271,20 @@ export default function LetsTalkSection() {
                       setForm({ ...form, message: e.target.value })
                     }
                     className={`${inputClass} resize-none`}
+                    disabled={submitting}
                   />
                 </div>
                 <div className="form-item">
                   <button
                     type="submit"
-                    className="group inline-flex items-center gap-3 self-start min-h-[48px] px-8 py-3 rounded-full text-[#080808] font-sans font-medium text-sm tracking-[0.15em] uppercase transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(201,168,76,0.35)]"
+                    disabled={submitting}
+                    className="group inline-flex items-center gap-3 self-start min-h-[48px] px-8 py-3 rounded-full text-[#080808] font-sans font-medium text-sm tracking-[0.15em] uppercase transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(201,168,76,0.35)] disabled:opacity-60 disabled:hover:scale-100 disabled:cursor-not-allowed"
                     style={{
                       background:
                         "linear-gradient(135deg, #c9a84c 0%, #e0c170 50%, #c9a84c 100%)",
                     }}
                   >
-                    <span>Send message</span>
+                    <span>{submitting ? "Sending..." : "Send message"}</span>
                     <svg
                       width="14"
                       height="14"
