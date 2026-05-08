@@ -131,9 +131,10 @@ export async function POST(req: Request) {
       }
 
       return NextResponse.json({ ok: true });
-    } catch {
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unknown error";
       return NextResponse.json(
-        { ok: false, error: "Failed to send reply." },
+        { ok: false, error: `Failed to send reply: ${msg}` },
         { status: 502 }
       );
     }
@@ -203,8 +204,12 @@ export async function POST(req: Request) {
       }
 
       return NextResponse.json({ ok: true });
-    } catch {
-      return NextResponse.json({ ok: false, error: "Failed to forward email." }, { status: 502 });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unknown error";
+      return NextResponse.json(
+        { ok: false, error: `Failed to forward email: ${msg}` },
+        { status: 502 }
+      );
     }
   }
 
@@ -252,9 +257,10 @@ export async function POST(req: Request) {
       // ignore
     }
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json(
-      { ok: false, error: "Failed to send email." },
+      { ok: false, error: `Failed to send email: ${msg}` },
       { status: 502 }
     );
   }

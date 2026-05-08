@@ -58,8 +58,12 @@ export async function GET(req: Request) {
     });
 
     return NextResponse.json({ ok: true, messages });
-  } catch {
-    return NextResponse.json({ ok: false, error: "Failed to load thread." }, { status: 500 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json(
+      { ok: false, error: `Failed to load thread: ${msg}` },
+      { status: 500 }
+    );
   }
 }
 

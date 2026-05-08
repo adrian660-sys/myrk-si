@@ -22,12 +22,17 @@ function password() {
   return pw;
 }
 
+function insecureTls() {
+  return process.env.MAIL_TLS_INSECURE === "true";
+}
+
 export async function withImap<T>(fn: (client: ImapFlow) => Promise<T>) {
   const client = new ImapFlow({
     host: IMAP.host,
     port: IMAP.port,
     secure: IMAP.secure,
     auth: { user: IMAP.user, pass: password() },
+    tls: insecureTls() ? { rejectUnauthorized: false } : undefined,
   });
 
   await client.connect();
@@ -48,6 +53,7 @@ export function smtpTransport() {
     port: SMTP.port,
     secure: SMTP.secure,
     auth: { user: SMTP.user, pass: password() },
+    tls: insecureTls() ? { rejectUnauthorized: false } : undefined,
   });
 }
 

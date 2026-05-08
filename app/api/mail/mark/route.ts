@@ -28,8 +28,12 @@ export async function POST(req: Request) {
       await markSeen(client, folder, id, seen);
     });
     return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ ok: false, error: "Failed to update flags." }, { status: 500 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json(
+      { ok: false, error: `Failed to update flags: ${msg}` },
+      { status: 500 }
+    );
   }
 }
 

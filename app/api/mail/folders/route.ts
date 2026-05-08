@@ -42,8 +42,12 @@ export async function GET() {
     });
 
     return NextResponse.json({ ok: true, folders });
-  } catch {
-    return NextResponse.json({ ok: false, error: "Failed to load folders." }, { status: 500 });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json(
+      { ok: false, error: `Failed to load folders: ${msg}` },
+      { status: 500 }
+    );
   }
 }
 

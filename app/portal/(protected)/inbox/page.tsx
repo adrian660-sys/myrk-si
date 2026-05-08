@@ -70,7 +70,9 @@ export default function InboxPage() {
           if (inbox) setFolderPath(inbox.path);
         }
       } catch (e) {
-        if (!cancelled) setError("Failed to load inbox.");
+        const msg =
+          e instanceof Error ? e.message : "Failed to load folders/messages.";
+        if (!cancelled) setError(msg);
       } finally {
         if (!cancelled) setLoadingFolders(false);
       }
@@ -91,7 +93,7 @@ export default function InboxPage() {
       const data = (await res.json().catch(() => null)) as
         | { ok?: boolean; items?: ListItem[]; error?: string }
         | null;
-      if (!res.ok || !data?.ok) throw new Error(data?.error);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || "Request failed.");
       setItems(data.items || []);
       if (!opts?.keepSelection) {
         setSelectedId(null);
@@ -99,8 +101,9 @@ export default function InboxPage() {
         setThreadOpen(false);
         setThreadMsgs([]);
       }
-    } catch {
-      setError("Failed to load messages.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load messages.";
+      setError(msg);
     } finally {
       setLoadingList(false);
     }
@@ -133,8 +136,9 @@ export default function InboxPage() {
           f.path === folderPath ? { ...f, unseen: Math.max(0, f.unseen - 1) } : f
         )
       );
-    } catch {
-      setError("Failed to load message.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load message.";
+      setError(msg);
     } finally {
       setLoadingMsg(false);
     }

@@ -75,9 +75,10 @@ export async function GET(
     }
 
     return NextResponse.json({ ok: true, message });
-  } catch {
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
     return NextResponse.json(
-      { ok: false, error: "Failed to load message." },
+      { ok: false, error: `Failed to load message: ${msg}` },
       { status: 500 }
     );
   }
