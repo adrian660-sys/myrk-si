@@ -4,6 +4,17 @@ import { formatAddress, normalizeSubject, withImap } from "@/app/lib/mail";
 
 export const runtime = "nodejs";
 
+function hasSeenFlag(flags: unknown) {
+  if (!flags) return false;
+  if (Array.isArray(flags)) return flags.includes("\\Seen");
+  if (typeof (flags as any).has === "function") return (flags as any).has("\\Seen");
+  try {
+    return Array.from(flags as any).includes("\\Seen");
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(req: Request) {
   if (!isPortalAuthed()) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
@@ -49,7 +60,7 @@ export async function GET(req: Request) {
           from: formatAddress(msg.envelope?.from?.[0] ?? null),
           subject,
           date: new Date((msg as any).internalDate || Date.now()).toISOString(),
-          unread: !((msg as any).flags || []).includes("\\Seen"),
+          unread: !hasSeenFlag((msg as any).flags),
         });
       }
 
