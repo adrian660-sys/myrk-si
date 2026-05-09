@@ -10,7 +10,13 @@ export default function PortalLoginPage() {
   const next = useMemo(() => {
     if (typeof window === "undefined") return "/portal/inbox";
     const u = new URL(window.location.href);
-    return u.searchParams.get("next") || "/portal/inbox";
+    const raw = u.searchParams.get("next");
+    const fallback = "/portal/inbox";
+    if (!raw || raw === "/portal" || raw === "/portal/") return fallback;
+    if (!raw.startsWith("/") || raw.startsWith("//")) return fallback;
+    if (!raw.startsWith("/portal/")) return fallback;
+    if (raw.startsWith("/portal/login")) return fallback;
+    return raw;
   }, []);
 
   const onSubmit = async (e: React.FormEvent) => {

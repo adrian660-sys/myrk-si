@@ -82,7 +82,9 @@ export async function middleware(req: NextRequest) {
 
   const url = req.nextUrl.clone();
   url.pathname = "/portal/login";
-  url.searchParams.set("next", pathname);
+  const nextPath =
+    pathname === "/portal" || pathname === "/portal/" ? "/portal/inbox" : pathname;
+  url.searchParams.set("next", nextPath);
   return NextResponse.redirect(url);
 }
 

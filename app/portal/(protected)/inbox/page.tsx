@@ -52,6 +52,20 @@ export default function InboxPage() {
     folders.find((f) => f.path === folderPath)?.label || "Inbox";
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("compose") === "1") {
+      setMode("compose");
+      setReplying(false);
+      setSelectedId(null);
+      setSelected(null);
+      setThreadOpen(false);
+      setThreadMsgs([]);
+      window.history.replaceState({}, "", "/portal/inbox");
+    }
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
