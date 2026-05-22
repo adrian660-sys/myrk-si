@@ -1,0 +1,10 @@
+# Supabase CLI config — only what is needed for local emulation / deploys.
+# Run `supabase init` once to fill in any missing project ID.
+
+project_id = "pm-finance-tracker"
+
+[functions.parse-statement]
+verify_jwt = true
+
+[functions.drive-upload]
+verify_jwt = true
