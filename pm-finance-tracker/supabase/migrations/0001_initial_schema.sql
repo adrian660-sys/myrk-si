@@ -1,5 +1,5 @@
--- PM Finance Tracker — initial schema
--- Run in the Supabase SQL editor or via `supabase db push`.
+-- PM Finance Tracker -- initial schema.
+-- Paste this whole file into the Supabase SQL editor and Run.
 
 -- ---------------------------------------------------------------------------
 -- Tables
@@ -54,19 +54,21 @@ create table if not exists public.import_logs (
   created_at            timestamptz not null default now()
 );
 
-create index if not exists idx_transactions_date on public.transactions(date);
-create index if not exists idx_transactions_trip on public.transactions(trip_id);
+create index if not exists idx_transactions_date  on public.transactions(date);
+create index if not exists idx_transactions_trip  on public.transactions(trip_id);
 create index if not exists idx_transactions_batch on public.transactions(import_batch_id);
 create index if not exists idx_cash_received_trip on public.cash_received(trip_id);
 
 -- Keep updated_at fresh on transactions.
 create or replace function public.set_updated_at()
-returns trigger language plpgsql as $$
+returns trigger
+language plpgsql
+as $func$
 begin
   new.updated_at = now();
   return new;
 end;
-$$;
+$func$;
 
 drop trigger if exists trg_transactions_updated_at on public.transactions;
 create trigger trg_transactions_updated_at
@@ -74,60 +76,73 @@ create trigger trg_transactions_updated_at
   for each row execute function public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
--- Row Level Security
--- Everyone authenticated may read. Only the admin email may write.
+-- Row Level Security: everyone authenticated may read, only admin may write.
 -- ---------------------------------------------------------------------------
 
-alter table public.trips          enable row level security;
-alter table public.transactions   enable row level security;
-alter table public.cash_received  enable row level security;
-alter table public.import_logs    enable row level security;
+alter table public.trips         enable row level security;
+alter table public.transactions  enable row level security;
+alter table public.cash_received enable row level security;
+alter table public.import_logs   enable row level security;
 
 create or replace function public.is_admin()
-returns boolean language sql stable as $$
+returns boolean
+language sql
+stable
+as $func$
   select coalesce(auth.jwt() ->> 'email', '') = 'adrian@myrk.si';
-$$;
+$func$;
 
-do $$
-declare t text;
-begin
-  foreach t in array array['trips', 'transactions', 'cash_received'] loop
-    execute format('drop policy if exists "read_authenticated" on public.%I;', t);
-    execute format('drop policy if exists "admin_write" on public.%I;', t);
-    execute format(
-      'create policy "read_authenticated" on public.%I for select using (auth.role() = ''authenticated'');', t);
-    execute format(
-      'create policy "admin_write" on public.%I for all using (public.is_admin()) with check (public.is_admin());', t);
-  end loop;
-end $$;
+-- trips -----------------------------------------------------------------
+drop policy if exists "read_authenticated" on public.trips;
+create policy "read_authenticated" on public.trips
+  for select using (auth.role() = 'authenticated');
+drop policy if exists "admin_write" on public.trips;
+create policy "admin_write" on public.trips
+  for all using (public.is_admin()) with check (public.is_admin());
 
--- import_logs: authenticated may read; both admin and guest may insert
--- (guests are allowed to upload statements), but only admin may modify/delete.
+-- transactions ----------------------------------------------------------
+drop policy if exists "read_authenticated" on public.transactions;
+create policy "read_authenticated" on public.transactions
+  for select using (auth.role() = 'authenticated');
+drop policy if exists "admin_write" on public.transactions;
+create policy "admin_write" on public.transactions
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- cash_received ---------------------------------------------------------
+drop policy if exists "read_authenticated" on public.cash_received;
+create policy "read_authenticated" on public.cash_received
+  for select using (auth.role() = 'authenticated');
+drop policy if exists "admin_write" on public.cash_received;
+create policy "admin_write" on public.cash_received
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- import_logs: any authenticated user may insert (guests upload statements),
+-- but only the admin may modify or delete.
 drop policy if exists "read_authenticated" on public.import_logs;
-drop policy if exists "insert_authenticated" on public.import_logs;
-drop policy if exists "admin_modify" on public.import_logs;
-
 create policy "read_authenticated" on public.import_logs
   for select using (auth.role() = 'authenticated');
+drop policy if exists "insert_authenticated" on public.import_logs;
 create policy "insert_authenticated" on public.import_logs
   for insert with check (auth.role() = 'authenticated');
-create policy "admin_modify" on public.import_logs
+drop policy if exists "admin_update" on public.import_logs;
+create policy "admin_update" on public.import_logs
   for update using (public.is_admin()) with check (public.is_admin());
+drop policy if exists "admin_delete" on public.import_logs;
 create policy "admin_delete" on public.import_logs
   for delete using (public.is_admin());
 
 -- ---------------------------------------------------------------------------
--- Storage bucket for uploaded bank statements (private, 6-month+ retention).
+-- Storage bucket for uploaded bank statements (private).
 -- ---------------------------------------------------------------------------
 
 insert into storage.buckets (id, name, public)
 values ('bank-statements', 'bank-statements', false)
 on conflict (id) do nothing;
 
-drop policy if exists "statements_read" on storage.objects;
-drop policy if exists "statements_insert" on storage.objects;
-
+drop policy if exists "statements_read"   on storage.objects;
 create policy "statements_read" on storage.objects
   for select using (bucket_id = 'bank-statements' and auth.role() = 'authenticated');
+
+drop policy if exists "statements_insert" on storage.objects;
 create policy "statements_insert" on storage.objects
   for insert with check (bucket_id = 'bank-statements' and auth.role() = 'authenticated');
