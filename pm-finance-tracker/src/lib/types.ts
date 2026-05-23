@@ -53,6 +53,35 @@ export interface ImportLog {
   created_at: string;
 }
 
+export type PlannedFrequency = 'once' | 'monthly' | 'quarterly' | 'yearly';
+
+export interface PlannedTransaction {
+  id: string;
+  description: string;
+  funding_source: FundingSource;
+  category: Category;
+  subcategory: string | null;
+  amount: number;
+  frequency: PlannedFrequency;
+  start_date: string;
+  end_date: string | null;
+  active: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** A single virtual occurrence generated from a PlannedTransaction. */
+export interface PlannedOccurrence {
+  planned_id: string;
+  description: string;
+  funding_source: FundingSource;
+  category: Category;
+  subcategory: string | null;
+  amount: number;
+  due_date: string; // YYYY-MM-DD
+}
+
 /** A transaction shape used on the import review screen before it is saved. */
 export interface ParsedTransaction {
   date: string | null;

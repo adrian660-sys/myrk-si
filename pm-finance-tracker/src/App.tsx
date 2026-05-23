@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Trips from './pages/Trips';
+import Planned from './pages/Planned';
 import Import from './pages/Import';
 import Settings from './pages/Settings';
 
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/trips" element={<Trips />} />
+        <Route path="/planned" element={<Planned />} />
         <Route path="/import" element={<Import />} />
         <Route
           path="/settings"

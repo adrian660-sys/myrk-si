@@ -11,6 +11,7 @@ const items: Item[] = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/transactions', label: 'Transactions' },
   { to: '/trips', label: 'Trips' },
+  { to: '/planned', label: 'Planned & bills' },
   { to: '/import', label: 'Import' },
   { to: '/settings', label: 'Settings', adminOnly: true },
 ];

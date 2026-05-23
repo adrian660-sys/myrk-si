@@ -5,9 +5,12 @@ import DonutChart from '../components/DonutChart';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { computeTripBalances, currentCashBalance } from '../lib/tripBalance';
 import { formatEur, formatSigned, formatDate, monthKey, monthLabel } from '../lib/format';
+import {
+  projectMonths, upcomingOccurrences, todayIsoLocal, daysBetween,
+} from '../lib/planned';
 
 export default function Dashboard() {
-  const { trips, transactions, cashReceived, loading, error } = useFinanceData();
+  const { trips, transactions, cashReceived, planned, loading, error } = useFinanceData();
 
   const balances = useMemo(
     () => computeTripBalances(trips, transactions, cashReceived),
@@ -57,6 +60,22 @@ export default function Dashboard() {
   const drafts = useMemo(() => transactions.filter((t) => !t.date), [transactions]);
   const recent = useMemo(() => transactions.slice(0, 10), [transactions]);
 
+  const upcoming = useMemo(
+    () => upcomingOccurrences(planned, { ahead: 30, pastDays: 7 }),
+    [planned]
+  );
+  const today = todayIsoLocal();
+  const overdueCount = upcoming.filter((o) => o.due_date < today).length;
+
+  const projection = useMemo(() => projectMonths(planned, 6), [planned]);
+  const projectionWithRunning = useMemo(() => {
+    let running = totals.cash;
+    return projection.map((m) => {
+      running += m.net;
+      return { ...m, runningCash: running };
+    });
+  }, [projection, totals.cash]);
+
   if (loading) return <div className="p-6 text-muted">Loading…</div>;
   if (error) return <div className="p-6 text-expense">Error: {error}</div>;
 
@@ -88,6 +107,112 @@ export default function Dashboard() {
             <Link className="btn-secondary" to="/transactions?filter=drafts">Review</Link>
           </div>
         </div>
+      )}
+
+      {upcoming.length > 0 && (
+        <section className="card">
+          <header className="px-5 py-3 border-b border-line flex items-center justify-between">
+            <h2 className="font-semibold">
+              Upcoming bills — next 30 days
+              {overdueCount > 0 && (
+                <span className="ml-2 chip bg-red-100 text-red-800">
+                  {overdueCount} overdue
+                </span>
+              )}
+            </h2>
+            <Link className="text-sm text-muted hover:text-ink" to="/planned">Manage →</Link>
+          </header>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-muted text-left">
+                <tr>
+                  <th className="px-5 py-2 font-medium">Due</th>
+                  <th className="px-5 py-2 font-medium">Description</th>
+                  <th className="px-5 py-2 font-medium">Source</th>
+                  <th className="px-5 py-2 font-medium">Category</th>
+                  <th className="px-5 py-2 font-medium text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {upcoming.map((o, i) => {
+                  const overdue = o.due_date < today;
+                  const daysOut = daysBetween(today, o.due_date);
+                  return (
+                    <tr key={`${o.planned_id}-${o.due_date}-${i}`} className="border-t border-line">
+                      <td className="px-5 py-2">
+                        <div className={overdue ? 'text-expense font-medium' : ''}>
+                          {formatDate(o.due_date)}
+                        </div>
+                        <div className="text-xs text-muted">
+                          {overdue
+                            ? `${-daysOut} day${daysOut === -1 ? '' : 's'} overdue`
+                            : daysOut === 0 ? 'today'
+                            : `in ${daysOut} day${daysOut === 1 ? '' : 's'}`}
+                        </div>
+                      </td>
+                      <td className="px-5 py-2">{o.description}</td>
+                      <td className="px-5 py-2">
+                        <span className="chip bg-canvas border border-line">{o.funding_source}</span>
+                      </td>
+                      <td className="px-5 py-2 text-muted">
+                        {o.category}{o.subcategory ? ` · ${o.subcategory}` : ''}
+                      </td>
+                      <td className={`px-5 py-2 text-right tabular-nums ${o.amount >= 0 ? 'text-income' : 'text-expense'}`}>
+                        {formatSigned(o.amount)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {projectionWithRunning.some((m) => m.occurrences.length > 0) && (
+        <section className="card">
+          <header className="px-5 py-3 border-b border-line flex items-center justify-between">
+            <h2 className="font-semibold">Cash-flow projection — next 6 months</h2>
+            <Link className="text-sm text-muted hover:text-ink" to="/planned">Edit rules →</Link>
+          </header>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-muted text-left">
+                <tr>
+                  <th className="px-5 py-2 font-medium">Month</th>
+                  <th className="px-5 py-2 font-medium text-right">Expected in</th>
+                  <th className="px-5 py-2 font-medium text-right">Expected out</th>
+                  <th className="px-5 py-2 font-medium text-right">Net</th>
+                  <th className="px-5 py-2 font-medium text-right">Projected cash</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projectionWithRunning.map((m) => (
+                  <tr key={m.monthKey} className="border-t border-line">
+                    <td className="px-5 py-2">{monthLabel(m.monthKey)}</td>
+                    <td className="px-5 py-2 text-right tabular-nums text-income">
+                      {m.income > 0 ? formatEur(m.income) : '—'}
+                    </td>
+                    <td className="px-5 py-2 text-right tabular-nums text-expense">
+                      {m.expense > 0 ? '−' + formatEur(m.expense) : '—'}
+                    </td>
+                    <td className={`px-5 py-2 text-right tabular-nums ${m.net >= 0 ? 'text-income' : 'text-expense'}`}>
+                      {formatSigned(m.net)}
+                    </td>
+                    <td className={`px-5 py-2 text-right tabular-nums font-medium ${m.runningCash >= 0 ? '' : 'text-expense'}`}>
+                      {formatEur(m.runningCash)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-5 py-2 text-xs text-muted border-t border-line">
+            "Projected cash" applies expected income/expenses to today's current cash
+            balance ({formatEur(totals.cash)}). Bank-account balances (DH / Revolut)
+            aren't tracked separately — they show as net delta only.
+          </div>
+        </section>
       )}
 
       <section className="card">
