@@ -29,15 +29,41 @@ export default function Import() {
   const [error, setError] = useState<string | null>(null);
   const [prepared, setPrepared] = useState<PreparedImport | null>(null);
   const [logs, setLogs] = useState<ImportLog[]>([]);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
-  useEffect(() => {
-    supabase
+  async function loadLogs() {
+    const { data } = await supabase
       .from('import_logs')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(20)
-      .then(({ data }) => setLogs((data as ImportLog[]) ?? []));
-  }, [prepared]);
+      .limit(20);
+    setLogs((data as ImportLog[]) ?? []);
+  }
+
+  useEffect(() => { loadLogs(); }, [prepared]);
+
+  async function deleteBatch(log: ImportLog) {
+    if (!log.import_batch_id) {
+      alert('This import was made before batch tracking was added. Use the Transactions page or a SQL delete instead.');
+      return;
+    }
+    const confirmed = window.confirm(
+      `Delete all ${log.rows_imported} transaction${log.rows_imported === 1 ? '' : 's'} from "${log.filename}"?\n\nThis cannot be undone.`
+    );
+    if (!confirmed) return;
+    setDeleting(log.id);
+    const { error: err } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('import_batch_id', log.import_batch_id);
+    if (err) { alert(err.message); setDeleting(null); return; }
+    // Mark the log as undone by zeroing the row count; keep the log for audit.
+    await supabase.from('import_logs')
+      .update({ rows_imported: 0 })
+      .eq('id', log.id);
+    setDeleting(null);
+    await Promise.all([loadLogs(), reload()]);
+  }
 
   function reset() {
     setFile(null);
@@ -136,6 +162,7 @@ export default function Import() {
       supabase_storage_path: prepared.storagePath,
       google_drive_file_id: prepared.driveFileId,
       google_drive_url: prepared.driveUrl,
+      import_batch_id: batchId,
       uploaded_by: email,
     });
 
@@ -223,11 +250,12 @@ export default function Import() {
                 <th className="px-5 py-2 font-medium text-right">Skipped</th>
                 <th className="px-5 py-2 font-medium">Drive</th>
                 <th className="px-5 py-2 font-medium">By</th>
+                {role === 'admin' && <th className="px-5 py-2 font-medium" />}
               </tr>
             </thead>
             <tbody>
               {logs.length === 0 && (
-                <tr><td colSpan={7} className="px-5 py-4 text-muted">No imports yet.</td></tr>
+                <tr><td colSpan={role === 'admin' ? 8 : 7} className="px-5 py-4 text-muted">No imports yet.</td></tr>
               )}
               {logs.map((l) => (
                 <tr key={l.id} className="border-t border-line">
@@ -243,6 +271,21 @@ export default function Import() {
                     ) : <span className="text-muted">—</span>}
                   </td>
                   <td className="px-5 py-2 text-muted">{l.uploaded_by ?? '—'}</td>
+                  {role === 'admin' && (
+                    <td className="px-5 py-2 text-right">
+                      {l.rows_imported > 0 && l.import_batch_id ? (
+                        <button
+                          className="text-xs text-muted hover:text-expense"
+                          disabled={deleting === l.id}
+                          onClick={() => deleteBatch(l)}
+                        >
+                          {deleting === l.id ? 'Deleting…' : 'Delete imported'}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-muted">—</span>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

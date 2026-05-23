@@ -49,6 +49,7 @@ export interface ImportLog {
   supabase_storage_path: string | null;
   google_drive_file_id: string | null;
   google_drive_url: string | null;
+  import_batch_id: string | null;
   uploaded_by: string | null;
   created_at: string;
 }
