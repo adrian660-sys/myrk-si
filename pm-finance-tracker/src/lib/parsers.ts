@@ -73,7 +73,7 @@ export function parseCsv(text: string): ParsedTransaction[] {
     const cols = splitCsvLine(lines[row]);
     const get = (i: number) => (i >= 0 && i < cols.length ? cols[i].trim() : '');
 
-    const amount = parseFloat(get(iAmt).replace(/\./g, '').replace(',', '.')) || 0;
+    const amount = parseAmount(get(iAmt));
     const source = (get(iSource) || 'Cash') as FundingSource;
     const category = (get(iCat) || 'Business') as Category;
     const billRaw = get(iBill);
@@ -97,6 +97,25 @@ export function parseCsv(text: string): ParsedTransaction[] {
     });
   }
   return out;
+}
+
+/**
+ * Parse a number string in either US ("1,234.56" / "298.68") or Slovenian
+ * ("1.234,56") format. The rule: whichever of `.` or `,` appears last is
+ * treated as the decimal separator; the other is a thousands separator and
+ * stripped. Plain "298.68" -> 298.68; "29.868,00" -> 29868.
+ */
+function parseAmount(raw: string): number {
+  if (!raw) return 0;
+  const cleaned = raw.replace(/[€\s]/g, '');
+  if (!cleaned) return 0;
+  const dot = cleaned.lastIndexOf('.');
+  const com = cleaned.lastIndexOf(',');
+  const normalised = com > dot
+    ? cleaned.replace(/\./g, '').replace(',', '.')
+    : cleaned.replace(/,/g, '');
+  const n = Number(normalised);
+  return Number.isFinite(n) ? n : 0;
 }
 
 function splitCsvLine(line: string): string[] {
