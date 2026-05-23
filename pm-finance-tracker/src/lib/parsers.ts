@@ -80,6 +80,7 @@ export function parseCsv(text: string): ParsedTransaction[] {
     const bill: BillStatus = billRaw === '📎 Bill' || billRaw === 'Bill' ? '📎 Bill'
       : billRaw === '/' ? '/' : '';
 
+    const needsReview = !get(iCat) || !get(iSource);
     out.push({
       date: get(iDate) || null,
       description: get(iDesc) || '(no description)',
@@ -90,8 +91,9 @@ export function parseCsv(text: string): ParsedTransaction[] {
       notes: get(iNotes) || null,
       bill_status: bill,
       trip_id: null,
-      needsReview: !get(iCat) || !get(iSource),
+      needsReview,
       duplicate: false,
+      include: !needsReview,
     });
   }
   return out;

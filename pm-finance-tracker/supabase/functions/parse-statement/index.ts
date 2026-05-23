@@ -24,6 +24,7 @@ interface ParsedTransaction {
   trip_id: null;
   needsReview: boolean;
   duplicate: false;
+  include: boolean;
 }
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -111,6 +112,7 @@ function parseDh(lines: string[]): ParsedTransaction[] {
       trip_id: null,
       needsReview: cat.needsReview,
       duplicate: false,
+      include: !cat.needsReview,
     });
   }
   return out;
@@ -183,6 +185,7 @@ function parseRevolut(lines: string[]): ParsedTransaction[] {
       trip_id: null,
       needsReview: cat.needsReview,
       duplicate: false,
+      include: !cat.needsReview,
     });
   }
   return out;

@@ -101,7 +101,9 @@ export default function Import() {
     setError(null);
 
     const batchId = crypto.randomUUID();
-    const toInsert = prepared.rows.filter((r) => !r.duplicate);
+    // Only rows the user explicitly ticked are imported; duplicates can't be
+    // overridden because Supabase would reject them anyway.
+    const toInsert = prepared.rows.filter((r) => r.include && !r.duplicate);
     const payload = toInsert.map((r) => ({
       date: r.date,
       description: r.description,
@@ -266,7 +268,9 @@ function ReviewTable({
   const stats = useMemo(() => {
     const dup = prepared.rows.filter((r) => r.duplicate).length;
     const review = prepared.rows.filter((r) => r.needsReview && !r.duplicate).length;
-    return { total: prepared.rows.length, dup, review };
+    const willImport = prepared.rows.filter((r) => r.include && !r.duplicate).length;
+    const skipped = prepared.rows.length - willImport;
+    return { total: prepared.rows.length, dup, review, willImport, skipped };
   }, [prepared.rows]);
 
   function update(i: number, patch: Partial<ParsedTransaction>) {
@@ -275,19 +279,36 @@ function ReviewTable({
     onChange(next);
   }
 
+  function setAllInclude(value: boolean) {
+    // Duplicates are never importable, regardless of the toggle.
+    onChange(prepared.rows.map((r) => ({ ...r, include: value && !r.duplicate })));
+  }
+
   return (
     <div className="space-y-4">
       <div className="card-pad flex flex-wrap items-center gap-3">
         <div>
           <div className="font-medium">{prepared.filename}</div>
           <div className="text-sm text-muted">
-            {stats.total} rows · {stats.dup} duplicates skipped · {stats.review} need review
+            {stats.total} rows · <span className="text-income font-medium">{stats.willImport} will import</span>
+            {' · '}<span>{stats.skipped} skip</span>
+            {stats.dup > 0 && <> · {stats.dup} duplicates</>}
+            {stats.review > 0 && <> · {stats.review} unmatched</>}
           </div>
         </div>
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex flex-wrap gap-2">
+          <button className="btn-secondary" onClick={() => setAllInclude(true)} disabled={busy}>
+            Select all
+          </button>
+          <button className="btn-secondary" onClick={() => setAllInclude(false)} disabled={busy}>
+            Deselect all
+          </button>
           <button className="btn-secondary" onClick={onCancel} disabled={busy}>Cancel</button>
-          <button className="btn-primary" onClick={onConfirm} disabled={busy || !canConfirm}>
-            {busy ? 'Importing…' : canConfirm ? `Confirm import` : 'Admin only'}
+          <button className="btn-primary" onClick={onConfirm}
+            disabled={busy || !canConfirm || stats.willImport === 0}>
+            {busy ? 'Importing…'
+              : !canConfirm ? 'Admin only'
+              : `Import ${stats.willImport} row${stats.willImport === 1 ? '' : 's'}`}
           </button>
         </div>
       </div>
@@ -298,6 +319,9 @@ function ReviewTable({
         <table className="w-full text-sm">
           <thead className="text-muted text-left">
             <tr>
+              <th className="px-3 py-2 font-medium w-10">
+                <span className="sr-only">Import</span>
+              </th>
               <th className="px-3 py-2 font-medium">Date</th>
               <th className="px-3 py-2 font-medium">Description</th>
               <th className="px-3 py-2 font-medium">Source</th>
@@ -312,9 +336,19 @@ function ReviewTable({
             {prepared.rows.map((r, i) => {
               const subs = SUBCATEGORIES[r.category];
               const tone = r.duplicate ? 'bg-gray-50 text-muted'
+                : !r.include ? 'bg-gray-50 text-muted'
                 : r.needsReview ? 'bg-amber-50' : '';
               return (
                 <tr key={i} className={`border-t border-line ${tone}`}>
+                  <td className="px-3 py-2">
+                    <input
+                      type="checkbox"
+                      checked={r.include}
+                      disabled={r.duplicate}
+                      onChange={(e) => update(i, { include: e.target.checked })}
+                      aria-label="Include in import"
+                    />
+                  </td>
                   <td className="px-3 py-2">{r.date ? formatDate(r.date) : '—'}</td>
                   <td className="px-3 py-2">{r.description}</td>
                   <td className="px-3 py-2">

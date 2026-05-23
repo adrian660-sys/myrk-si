@@ -97,4 +97,9 @@ export interface ParsedTransaction {
   needsReview: boolean;
   /** true when an identical transaction already exists in the database. */
   duplicate: boolean;
+  /**
+   * Whether this row is queued for import. Default: matched rows -> true,
+   * needsReview / duplicate -> false. Users can flip it in the review UI.
+   */
+  include: boolean;
 }
