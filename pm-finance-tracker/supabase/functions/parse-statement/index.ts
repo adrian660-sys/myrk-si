@@ -73,33 +73,25 @@ function json(body: unknown, status = 200) {
 
 function parseDh(lines: string[]): ParsedTransaction[] {
   const out: ParsedTransaction[] = [];
-  // Heuristic: a row starts with a DD.MM.YYYY booking date.
   for (const line of lines) {
     const m = line.match(/^(\d{2}\.\d{2}\.\d{4})\s+(\S+)\s+(.+)$/);
     if (!m) continue;
     const date = parseDate(m[1]);
     const rest = m[3];
 
-    // Last two numbers on the line are V breme and V dobro (one is blank).
     const nums = [...rest.matchAll(/-?\d{1,3}(?:\.\d{3})*(?:,\d{2})/g)];
     if (nums.length === 0) continue;
 
-    let debit: number | null = null;
-    let credit: number | null = null;
-    if (nums.length >= 2) {
-      debit = parseSloveneNumber(nums[nums.length - 2][0]);
-      credit = parseSloveneNumber(nums[nums.length - 1][0]);
-    } else {
-      // Only one number — assume it is whichever column is non-zero.
-      const n = parseSloveneNumber(nums[0][0]);
-      if (n && n < 0) debit = -n; else credit = n;
-    }
+    // Magnitude only — sign is decided by the category, not by which column
+    // the PDF rendered the number in. Bank statements list one column per row
+    // and the PDF often loses positional info during text extraction.
+    const magnitude = Math.abs(parseSloveneNumber(nums[nums.length - 1][0]) ?? 0);
+    if (magnitude === 0) continue;
 
     const description = rest.slice(0, nums[0].index ?? rest.length).trim();
-    const amount = credit && credit > 0 ? credit : -(debit ?? 0);
-    if (amount === 0) continue; // skip empty rows
-
     const cat = categoriseDh(description);
+    const amount = magnitude * signFor(cat.category);
+
     out.push({
       date,
       description,
@@ -118,7 +110,20 @@ function parseDh(lines: string[]): ParsedTransaction[] {
   return out;
 }
 
-function categoriseDh(description: string): { category: ParsedTransaction['category']; subcategory: string | null; needsReview: boolean } {
+/**
+ * Income is positive, everything else negative. Transfer defaults to negative
+ * too; if it turns out to be an incoming transfer the user can flip the sign
+ * on the review screen before importing.
+ */
+function signFor(category: ParsedTransaction['category']): 1 | -1 {
+  return category === 'Income' ? 1 : -1;
+}
+
+function categoriseDh(description: string): {
+  category: ParsedTransaction['category'];
+  subcategory: string | null;
+  needsReview: boolean;
+} {
   const d = description.toLowerCase();
   if (d.includes('zz in do prispevki') && d.includes('zzzs'))
     return { category: 'Business', subcategory: 'Health Contribution', needsReview: false };
@@ -158,21 +163,23 @@ function parseRevolut(lines: string[]): ParsedTransaction[] {
     const nums = [...line.matchAll(/-?\d{1,3}(?:[.,]\d{3})*[.,]\d{2}/g)];
     if (nums.length < 2) continue;
 
-    // Trailing balance, preceded by money-in and money-out (one is empty / 0).
-    const balance = parseSloveneNumber(nums[nums.length - 1][0]) ?? 0;
-    const moneyIn = nums.length >= 2 ? parseSloveneNumber(nums[nums.length - 2][0]) ?? 0 : 0;
-    const moneyOut = nums.length >= 3 ? parseSloveneNumber(nums[nums.length - 3][0]) ?? 0 : 0;
-    void balance;
-
-    const amount = moneyIn > 0 ? moneyIn : -Math.abs(moneyOut);
-    if (amount === 0) continue;
+    // Pick the largest non-balance number as the transaction magnitude. The
+    // trailing balance is usually larger; everything else is the actual
+    // money-in / money-out amount. Sign is set by category, not column.
+    const magnitudes = nums.slice(0, -1)
+      .map((n) => Math.abs(parseSloveneNumber(n[0]) ?? 0))
+      .filter((n) => n > 0);
+    const magnitude = magnitudes.length > 0 ? Math.max(...magnitudes) : 0;
+    if (magnitude === 0) continue;
 
     // Description is between the code token and the first numeric column.
     const codeIdx = line.indexOf(code) + code.length;
     const firstNumIdx = nums[0].index ?? line.length;
     const description = line.slice(codeIdx, firstNumIdx).trim() || `Revolut ${code}`;
 
-    const cat = categoriseRevolut(code, moneyIn);
+    const cat = categoriseRevolut(code);
+    const amount = magnitude * signFor(cat.category);
+
     out.push({
       date,
       description,
@@ -191,11 +198,10 @@ function parseRevolut(lines: string[]): ParsedTransaction[] {
   return out;
 }
 
-function categoriseRevolut(code: string, moneyIn: number) {
+function categoriseRevolut(code: string) {
   const c = code.toUpperCase();
   if (c === 'FEE') return { category: 'Business' as const, subcategory: 'Banking', needsReview: false };
-  if (c === 'MOA' && moneyIn > 0)
-    return { category: 'Income' as const, subcategory: 'Research Payment', needsReview: false };
+  if (c === 'MOA') return { category: 'Income' as const, subcategory: 'Research Payment', needsReview: false };
   if (c === 'MOS') return { category: 'Transfer' as const, subcategory: null, needsReview: false };
   if (c === 'ATM') return { category: 'Travel' as const, subcategory: 'Miscellaneous', needsReview: true };
   return { category: 'Business' as const, subcategory: null, needsReview: true };
