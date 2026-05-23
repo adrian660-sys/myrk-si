@@ -27,6 +27,21 @@ export default function Dashboard() {
     return { income, expenses, net: income - expenses, cash: currentCashBalance(balances) };
   }, [transactions, balances]);
 
+  // Balance per funding source. Cash uses the trip rollup (fresh cash − cash
+  // expenses); DH and Revolut sum every transaction posted to that source
+  // (positive = money in, negative = money out). Transfers ARE included on
+  // both sides so a DH→Revolut move correctly decreases DH and increases
+  // Revolut.
+  const balanceBySource = useMemo(() => {
+    let dh = 0, revolut = 0;
+    for (const t of transactions) {
+      if (t.funding_source === 'DH') dh += t.amount;
+      else if (t.funding_source === 'Revolut') revolut += t.amount;
+    }
+    const cash = totals.cash;
+    return { cash, dh, revolut, total: cash + dh + revolut };
+  }, [transactions, totals.cash]);
+
   const monthly = useMemo(() => {
     const map = new Map<string, { income: number; travel: number; business: number; net: number }>();
     for (const t of transactions) {
@@ -86,14 +101,37 @@ export default function Dashboard() {
         <p className="text-sm text-muted">All values in EUR.</p>
       </header>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        <KpiCard label="Total Income" value={totals.income} tone="income" />
-        <KpiCard label="Total Expenses" value={totals.expenses} tone="expense" />
-        <KpiCard label="Net Balance" value={totals.net}
-          tone={totals.net >= 0 ? 'income' : 'expense'} />
-        <KpiCard label="Current Cash" value={totals.cash}
-          hint={`After ${balances.length} trip${balances.length === 1 ? '' : 's'}`} />
-      </div>
+      <section className="space-y-3">
+        <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
+          Balances by source
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <KpiCard label="Cash" value={balanceBySource.cash}
+            tone={balanceBySource.cash >= 0 ? 'neutral' : 'expense'}
+            hint={`After ${balances.length} trip${balances.length === 1 ? '' : 's'}`} />
+          <KpiCard label="DH" value={balanceBySource.dh}
+            tone={balanceBySource.dh >= 0 ? 'neutral' : 'expense'}
+            hint="Sum of DH transactions" />
+          <KpiCard label="Revolut" value={balanceBySource.revolut}
+            tone={balanceBySource.revolut >= 0 ? 'neutral' : 'expense'}
+            hint="Sum of Revolut transactions" />
+          <KpiCard label="Total" value={balanceBySource.total}
+            tone={balanceBySource.total >= 0 ? 'income' : 'expense'}
+            hint="Cash + DH + Revolut" />
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
+          Performance — all time
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+          <KpiCard label="Total Income" value={totals.income} tone="income" />
+          <KpiCard label="Total Expenses" value={totals.expenses} tone="expense" />
+          <KpiCard label="Net" value={totals.net}
+            tone={totals.net >= 0 ? 'income' : 'expense'} />
+        </div>
+      </section>
 
       {drafts.length > 0 && (
         <div className="card-pad border-l-4 border-amber-400">
