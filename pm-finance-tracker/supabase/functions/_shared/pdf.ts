@@ -1,12 +1,13 @@
-// Wrapper around pdfjs-dist for Deno. Returns all extracted text grouped by page line.
-// The legacy build is used because the default ESM build pulls in browser-only APIs
-// (DOMMatrix, document) that aren't present in Deno.
+// Wrapper around unpdf (a Deno/edge-friendly fork of pdfjs) for PDF text
+// extraction. unpdf strips out the browser-only canvas dependency that breaks
+// pdfjs-dist on Supabase Edge Functions, while preserving the same
+// `getTextContent()` API so we can still group text items by y-coordinate.
 //
 // deno-lint-ignore-file no-explicit-any
-import * as pdfjs from 'https://esm.sh/pdfjs-dist@4.0.379/legacy/build/pdf.mjs?target=deno';
+import { getDocumentProxy } from 'https://esm.sh/unpdf@0.12.1';
 
 export async function extractPdfLines(bytes: Uint8Array): Promise<string[]> {
-  const doc = await (pdfjs as any).getDocument({ data: bytes, isEvalSupported: false }).promise;
+  const doc = await getDocumentProxy(bytes);
   const lines: string[] = [];
 
   for (let p = 1; p <= doc.numPages; p++) {
