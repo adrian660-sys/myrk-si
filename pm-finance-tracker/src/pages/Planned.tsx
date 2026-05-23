@@ -7,6 +7,7 @@ import {
   CATEGORIES, FUNDING_SOURCES, SUBCATEGORIES,
 } from '../lib/constants';
 import { formatDate, formatSigned, todayIso } from '../lib/format';
+import { downloadPlannedCsv } from '../lib/csv';
 import { expandOccurrences, todayIsoLocal, addDays } from '../lib/planned';
 import type {
   Category, FundingSource, PlannedFrequency, PlannedTransaction,
@@ -51,7 +52,7 @@ export default function Planned() {
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-4">
-      <header className="flex items-center justify-between">
+      <header className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">Planned & recurring</h1>
           <p className="text-sm text-muted">
@@ -60,9 +61,18 @@ export default function Planned() {
             transactions.
           </p>
         </div>
-        {isAdmin && (
-          <button className="btn-primary" onClick={() => setEditing('new')}>+ New</button>
-        )}
+        <div className="flex gap-2 shrink-0">
+          <button
+            className="btn-secondary"
+            disabled={planned.length === 0}
+            onClick={() => downloadPlannedCsv(planned)}
+          >
+            ↓ Export CSV
+          </button>
+          {isAdmin && (
+            <button className="btn-primary" onClick={() => setEditing('new')}>+ New</button>
+          )}
+        </div>
       </header>
 
       <div className="card overflow-x-auto">

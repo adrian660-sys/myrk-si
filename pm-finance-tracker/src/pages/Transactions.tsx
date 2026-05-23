@@ -7,6 +7,7 @@ import { useIsAdmin } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { CATEGORIES, FUNDING_SOURCES } from '../lib/constants';
 import { formatDate, formatSigned, monthKey, monthLabel } from '../lib/format';
+import { downloadTransactionsCsv } from '../lib/csv';
 import type { Transaction } from '../lib/types';
 
 const PAGE_SIZE = 50;
@@ -61,14 +62,27 @@ export default function Transactions() {
     reload();
   }
 
+  const filterHint = [filterMonth, filterCategory, filterSource]
+    .filter(Boolean).join('_') || (draftsOnly ? 'drafts' : 'all');
+
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
-      <header>
-        <h1 className="text-2xl font-semibold">Transactions</h1>
-        <p className="text-sm text-muted">
-          {filtered.length} of {transactions.length} shown
-          {draftsOnly && ' · drafts only'}
-        </p>
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold">Transactions</h1>
+          <p className="text-sm text-muted">
+            {filtered.length} of {transactions.length} shown
+            {draftsOnly && ' · drafts only'}
+          </p>
+        </div>
+        <button
+          className="btn-secondary"
+          disabled={filtered.length === 0}
+          onClick={() => downloadTransactionsCsv(filtered, trips, filterHint)}
+          title="Download the rows currently shown as CSV"
+        >
+          ↓ Export CSV
+        </button>
       </header>
 
       <div className="card-pad grid grid-cols-2 md:grid-cols-5 gap-3">
