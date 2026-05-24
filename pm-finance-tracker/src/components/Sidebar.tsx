@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import AmountVisibilityToggle from './AmountVisibilityToggle';
 import { useAuth } from '../hooks/useAuth';
 import { setLanguage } from '../i18n';
 
@@ -27,8 +28,13 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <aside className="h-full w-64 shrink-0 bg-sidebar text-white flex flex-col">
       <div className="px-5 py-5 border-b border-white/10">
-        <div className="font-semibold tracking-tight">{t('nav.appName')}</div>
-        <div className="text-xs text-white/50 mt-0.5">{email}</div>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <div className="font-semibold tracking-tight">{t('nav.appName')}</div>
+            <div className="text-xs text-white/50 mt-0.5 truncate">{email}</div>
+          </div>
+          <AmountVisibilityToggle />
+        </div>
         {role === 'guest' && (
           <span className="chip mt-2 bg-white/10 text-white/80">{t('nav.readOnly')}</span>
         )}

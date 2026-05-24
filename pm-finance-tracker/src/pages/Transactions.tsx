@@ -6,7 +6,7 @@ import TransactionForm from '../components/TransactionForm';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { CATEGORIES, FUNDING_SOURCES, SUBCATEGORIES } from '../lib/constants';
+import { FUNDING_SOURCES } from '../lib/constants';
 import { formatDate, formatSigned, monthKey, monthLabel } from '../lib/format';
 import { downloadTransactionsCsv } from '../lib/csv';
 import type { Transaction } from '../lib/types';
@@ -15,7 +15,7 @@ const PAGE_SIZE = 50;
 
 export default function Transactions() {
   const { t: tr } = useTranslation();
-  const { transactions, trips, reload, loading } = useFinanceData();
+  const { transactions, trips, categories, subcategories, reload, loading } = useFinanceData();
   const isAdmin = useIsAdmin();
   const [params, setParams] = useSearchParams();
 
@@ -39,11 +39,11 @@ export default function Transactions() {
   const tripMap = useMemo(() => new Map(trips.map((t) => [t.id, t])), [trips]);
 
   const subcategoryOptions = useMemo(() => {
-    if (filterCategory && filterCategory in SUBCATEGORIES) {
-      return SUBCATEGORIES[filterCategory as keyof typeof SUBCATEGORIES];
+    if (filterCategory && filterCategory in subcategories) {
+      return subcategories[filterCategory];
     }
-    return [...new Set(Object.values(SUBCATEGORIES).flat())];
-  }, [filterCategory]);
+    return [...new Set(Object.values(subcategories).flat())];
+  }, [filterCategory, subcategories]);
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -122,7 +122,7 @@ export default function Transactions() {
           <select className="input" value={filterCategory}
             onChange={(e) => updateParam('category', e.target.value)}>
             <option value="">{tr('common.all')}</option>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div>
@@ -219,6 +219,8 @@ export default function Transactions() {
           <TransactionForm
             initial={editing}
             trips={trips}
+            categories={categories}
+            subcategories={subcategories}
             onSaved={() => { setEditing(null); reload(); }}
             onCancel={() => setEditing(null)}
           />

@@ -1,14 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
-import {
-  CATEGORIES,
-  BILL_STATUSES,
-  FUNDING_SOURCES,
-  PER_DIEM_RATE,
-  REMOTE_WORK_RATE,
-  SUBCATEGORIES,
-} from '../lib/constants';
+import { BILL_STATUSES, FUNDING_SOURCES, PER_DIEM_RATE, REMOTE_WORK_RATE } from '../lib/constants';
 import type {
   BillStatus,
   Category,
@@ -16,16 +9,25 @@ import type {
   Transaction,
   Trip,
 } from '../lib/types';
-import { todayIso } from '../lib/format';
+import { formatEur, formatPlainAmount, todayIso } from '../lib/format';
 
 interface Props {
   trips: Trip[];
+  categories: Category[];
+  subcategories: Record<string, string[]>;
   initial?: Transaction | null;
   onSaved: () => void;
   onCancel?: () => void;
 }
 
-export default function TransactionForm({ trips, initial, onSaved, onCancel }: Props) {
+export default function TransactionForm({
+  trips,
+  categories,
+  subcategories: SUBCATEGORIES,
+  initial,
+  onSaved,
+  onCancel,
+}: Props) {
   const { t } = useTranslation();
   const editing = !!initial;
 
@@ -33,7 +35,9 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
   const [description, setDescription] = useState(initial?.description ?? '');
   const [fundingSource, setFundingSource] =
     useState<FundingSource>(initial?.funding_source ?? 'Cash');
-  const [category, setCategory] = useState<Category>(initial?.category ?? 'Travel');
+  const [category, setCategory] = useState<Category>(
+    initial?.category ?? categories[0] ?? 'Travel'
+  );
   const [subcategory, setSubcategory] = useState<string>(initial?.subcategory ?? '');
   const [amount, setAmount] = useState<string>(initial ? String(initial.amount) : '');
   const [direction, setDirection] = useState<'in' | 'out'>(
@@ -134,7 +138,7 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
           <label className="label">Category</label>
           <select className="input" value={category}
             onChange={(e) => setCategory(e.target.value as Category)}>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div>
@@ -151,13 +155,13 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
 
       {isFixedRate ? (
         <div className="rounded-md border border-line bg-canvas p-3">
-          <label className="label">{t('transactionForm.howManyDays', { rate })}</label>
+          <label className="label">{t('transactionForm.howManyDays', { rate: formatPlainAmount(rate) })}</label>
           <input className="input" type="number" min={0} step={1}
             value={days} onChange={(e) => setDays(e.target.value)}
             placeholder={t('transactionForm.daysPlaceholder')} />
           <div className="mt-2 text-sm text-muted">
             {t('transactionForm.calculatedAmount')} <span className="font-medium text-ink">
-              {Number.isFinite(finalAmount) ? finalAmount.toFixed(2) : '—'} €
+              {Number.isFinite(finalAmount) ? formatEur(finalAmount) : '—'}
             </span>
           </div>
         </div>

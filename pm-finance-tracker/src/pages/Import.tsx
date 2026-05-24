@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { parseCsv } from '../lib/parsers';
-import { CATEGORIES, FUNDING_SOURCES, SUBCATEGORIES } from '../lib/constants';
+import { FUNDING_SOURCES } from '../lib/constants';
 import type {
   Category, FundingSource, ImportLog, ImportSource, ParsedTransaction, Transaction,
 } from '../lib/types';
@@ -22,7 +22,7 @@ interface PreparedImport {
 
 export default function Import() {
   const { email, role } = useAuth();
-  const { trips, transactions, reload } = useFinanceData();
+  const { trips, transactions, categories, subcategories, reload } = useFinanceData();
   const [kind, setKind] = useState<ImportKind>('DH_PDF');
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState<'idle' | 'uploading' | 'parsing' | 'importing'>('idle');
@@ -80,7 +80,7 @@ export default function Import() {
       try {
         setBusy('parsing');
         const text = await file.text();
-        const raw = parseCsv(text, trips);
+        const raw = parseCsv(text, trips, categories);
         const rows = markDuplicates(raw, transactions);
         const { storagePath } = await uploadToStorage(file, kind);
         const drive = await callDriveUpload(storagePath, file.name, kind).catch(() => null);
@@ -232,6 +232,8 @@ export default function Import() {
           error={error}
           trips={trips}
           canConfirm={role === 'admin'}
+          categories={categories}
+          subcategories={subcategories}
         />
       )}
 
@@ -298,6 +300,7 @@ export default function Import() {
 
 function ReviewTable({
   prepared, onChange, onConfirm, onCancel, busy, error, trips, canConfirm,
+  categories, subcategories,
 }: {
   prepared: PreparedImport;
   onChange: (rows: ParsedTransaction[]) => void;
@@ -307,6 +310,8 @@ function ReviewTable({
   error: string | null;
   trips: { id: string; name: string }[];
   canConfirm: boolean;
+  categories: Category[];
+  subcategories: Record<string, string[]>;
 }) {
   const stats = useMemo(() => {
     const dup = prepared.rows.filter((r) => r.duplicate).length;
@@ -377,7 +382,7 @@ function ReviewTable({
           </thead>
           <tbody>
             {prepared.rows.map((r, i) => {
-              const subs = SUBCATEGORIES[r.category];
+              const subs = subcategories[r.category] ?? [];
               const tone = r.duplicate ? 'bg-gray-50 text-muted'
                 : !r.include ? 'bg-gray-50 text-muted'
                 : r.needsReview ? 'bg-amber-50' : '';
@@ -404,10 +409,10 @@ function ReviewTable({
                     <select className="input py-1" value={r.category}
                       onChange={(e) => {
                         const c = e.target.value as Category;
-                        const sub = SUBCATEGORIES[c][0] ?? null;
+                        const sub = subcategories[c]?.[0] ?? null;
                         update(i, { category: c, subcategory: sub, needsReview: false });
                       }}>
-                      {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                      {categories.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </td>
                   <td className="px-3 py-2">

@@ -54,7 +54,8 @@ export function categoriseRevolut(code: string, moneyIn: number): CategorisedRow
 
 export function parseCsv(
   text: string,
-  trips: { id: string; name: string }[] = []
+  trips: { id: string; name: string }[] = [],
+  validCategoryNames?: string[]
 ): ParsedTransaction[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length === 0) return [];
@@ -97,7 +98,12 @@ export function parseCsv(
 
     const amount = parseAmount(get(iAmt));
     const source = (get(iSource) || 'Cash') as FundingSource;
-    const category = (canoniseCategory(get(iCat)) || 'Business') as Category;
+    const rawCat = get(iCat);
+    const category = (
+      validCategoryNames?.length
+        ? (canoniseCategoryForCatalog(rawCat, validCategoryNames) ?? validCategoryNames.find((n) => n === 'Business') ?? validCategoryNames[0])
+        : (canoniseCategory(rawCat) || 'Business')
+    ) as Category;
     const billRaw = get(iBill);
     const bill: BillStatus = billRaw === '📎 Bill' || billRaw === 'Bill' ? '📎 Bill'
       : billRaw === '/' ? '/' : '';
@@ -153,6 +159,22 @@ function canonicaliseHeader(raw: string): string {
     trip: 'trip', potovanje: 'trip',
   };
   return aliases[key] ?? key;
+}
+
+function canoniseCategoryForCatalog(raw: string, validNames: string[]): string | null {
+  const k = raw.trim();
+  if (!k) return null;
+  const exact = validNames.find((n) => n.toLowerCase() === k.toLowerCase());
+  if (exact) return exact;
+  const lower = k.toLowerCase();
+  if (lower.startsWith('income')) return validNames.find((n) => n.toLowerCase() === 'income') ?? null;
+  if (lower.startsWith('business')) return validNames.find((n) => n.toLowerCase() === 'business') ?? null;
+  if (lower.startsWith('travel')) return validNames.find((n) => n.toLowerCase() === 'travel') ?? null;
+  if (lower.startsWith('transfer')) return validNames.find((n) => n.toLowerCase() === 'transfer') ?? null;
+  if (lower === 'other expenses' || lower === 'other') {
+    return validNames.find((n) => n.toLowerCase() === 'travel') ?? null;
+  }
+  return null;
 }
 
 /** Map common category synonyms onto our 4 canonical names. */

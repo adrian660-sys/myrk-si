@@ -1,4 +1,6 @@
 import { useState, type ReactNode } from 'react';
+import { AmountVisibilityProvider } from '../hooks/useAmountVisibility';
+import AmountVisibilityToggle from './AmountVisibilityToggle';
 import Sidebar from './Sidebar';
 import QuickEntryButton from './QuickEntryButton';
 
@@ -6,6 +8,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
+    <AmountVisibilityProvider>
     <div className="h-screen flex bg-canvas">
       {/* Desktop sidebar */}
       <div className="hidden md:block h-full">
@@ -36,12 +39,13 @@ export default function Layout({ children }: { children: ReactNode }) {
             ☰ Menu
           </button>
           <span className="font-semibold">PM Finance</span>
-          <span className="w-12" />
+          <AmountVisibilityToggle className="!text-ink !bg-canvas border border-line" />
         </header>
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
 
       <QuickEntryButton />
     </div>
+    </AmountVisibilityProvider>
   );
 }

@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { useFinanceData } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 import type { Trip } from '../lib/types';
 import Modal from './Modal';
 import TransactionForm from './TransactionForm';
 
 export default function QuickEntryButton() {
   const isAdmin = useIsAdmin();
+  const { categories, subcategories } = useFinanceData();
   const [open, setOpen] = useState(false);
   const [trips, setTrips] = useState<Trip[]>([]);
 
@@ -33,6 +35,8 @@ export default function QuickEntryButton() {
       <Modal open={open} onClose={() => setOpen(false)} title="Quick entry">
         <TransactionForm
           trips={trips}
+          categories={categories}
+          subcategories={subcategories}
           onSaved={() => {
             setOpen(false);
             window.dispatchEvent(new CustomEvent('pmf:transactions-changed'));

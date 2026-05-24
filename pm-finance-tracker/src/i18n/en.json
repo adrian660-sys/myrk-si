@@ -32,6 +32,10 @@
     "directionOut": "Out",
     "directionIn": "In"
   },
+  "amounts": {
+    "hide": "Hide amounts",
+    "show": "Show amounts"
+  },
   "nav": {
     "appName": "PM Finance",
     "dashboard": "Dashboard",
@@ -210,9 +214,22 @@
     "subtitle": "Admin-only configuration overview.",
     "account": "Account",
     "signedInAs": "Signed in as",
-    "categories": "Categories",
+    "categories": "Categories & subcategories",
+    "categoriesHint": "Used in transactions, planned items, and CSV import. Renaming updates existing rows.",
+    "runMigration0007": "Run supabase/migrations/0007_pm_categories.sql in the SQL editor to enable editing.",
+    "newCategory": "New category",
+    "addCategory": "Add category",
+    "newSubcategory": "New subcategory",
+    "addSub": "Add sub",
+    "confirmDeleteCategory": "Delete category \"{{name}}\" and all its subcategories?",
+    "confirmDeleteSubcategory": "Delete this subcategory?",
+    "categoryInUse": "{{count}} transactions still use this category. Rename or reassign them first.",
     "fixedRates": "Fixed daily rates",
-    "users": "Users"
+    "perDiem": "Per diem",
+    "remoteWork": "Remote work",
+    "ratesInConstants": "Per Diem / Remote Work daily rates are still in src/lib/constants.ts.",
+    "users": "Users",
+    "usersHint": "Manage users in the Supabase dashboard. Admin email is set via VITE_ADMIN_EMAIL and enforced by public.is_admin() in RLS."
   },
   "personal": {
     "dashboardTitle": "Personal dashboard",

@@ -4,9 +4,7 @@ import Modal from '../components/Modal';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import {
-  CATEGORIES, FUNDING_SOURCES, SUBCATEGORIES,
-} from '../lib/constants';
+import { FUNDING_SOURCES } from '../lib/constants';
 import { formatDate, formatSigned, todayIso } from '../lib/format';
 import { downloadPlannedCsv } from '../lib/csv';
 import { expandOccurrences, todayIsoLocal, addDays } from '../lib/planned';
@@ -18,7 +16,7 @@ const FREQUENCY_VALUES: PlannedFrequency[] = ['once', 'monthly', 'quarterly', 'y
 
 export default function Planned() {
   const { t } = useTranslation();
-  const { planned, reload, loading } = useFinanceData();
+  const { planned, categories, subcategories, reload, loading } = useFinanceData();
   const isAdmin = useIsAdmin();
 
   const [editing, setEditing] = useState<PlannedTransaction | null | 'new'>(null);
@@ -140,6 +138,8 @@ export default function Planned() {
         {editing && (
           <PlannedForm
             initial={editing === 'new' ? null : editing}
+            categories={categories}
+            subcategories={subcategories}
             onSaved={() => { setEditing(null); reload(); }}
             onCancel={() => setEditing(null)}
           />
@@ -150,18 +150,26 @@ export default function Planned() {
 }
 
 function PlannedForm({
-  initial, onSaved, onCancel,
+  initial,
+  categories,
+  subcategories: SUBCATEGORIES,
+  onSaved,
+  onCancel,
 }: {
   initial: PlannedTransaction | null;
+  categories: Category[];
+  subcategories: Record<string, string[]>;
   onSaved: () => void;
   onCancel: () => void;
 }) {
   const [description, setDescription] = useState(initial?.description ?? '');
   const [fundingSource, setFundingSource] =
     useState<FundingSource>(initial?.funding_source ?? 'DH');
-  const [category, setCategory] = useState<Category>(initial?.category ?? 'Business');
-  const [subcategory, setSubcategory] =
-    useState<string>(initial?.subcategory ?? SUBCATEGORIES['Business'][0] ?? '');
+  const defaultCat = categories.find((c) => c === 'Business') ?? categories[0] ?? 'Business';
+  const [category, setCategory] = useState<Category>(initial?.category ?? defaultCat);
+  const [subcategory, setSubcategory] = useState<string>(
+    initial?.subcategory ?? SUBCATEGORIES[defaultCat]?.[0] ?? ''
+  );
   const [amountAbs, setAmountAbs] = useState<string>(
     initial ? String(Math.abs(initial.amount)) : ''
   );
@@ -244,7 +252,7 @@ function PlannedForm({
               setCategory(c);
               setSubcategory(SUBCATEGORIES[c][0] ?? '');
             }}>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div>

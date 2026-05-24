@@ -32,6 +32,10 @@
     "directionOut": "Sortie",
     "directionIn": "Entrée"
   },
+  "amounts": {
+    "hide": "Masquer les montants",
+    "show": "Afficher les montants"
+  },
   "nav": {
     "appName": "PM Finance",
     "dashboard": "Tableau de bord",
@@ -210,9 +214,22 @@
     "subtitle": "Configuration réservée à l'administrateur.",
     "account": "Compte",
     "signedInAs": "Connecté en tant que",
-    "categories": "Catégories",
+    "categories": "Catégories et sous-catégories",
+    "categoriesHint": "Utilisées dans les transactions, prévisions et import CSV. Un renommage met à jour les lignes existantes.",
+    "runMigration0007": "Exécutez supabase/migrations/0007_pm_categories.sql dans l'éditeur SQL pour activer l'édition.",
+    "newCategory": "Nouvelle catégorie",
+    "addCategory": "Ajouter catégorie",
+    "newSubcategory": "Nouvelle sous-catégorie",
+    "addSub": "Ajouter sous-cat.",
+    "confirmDeleteCategory": "Supprimer la catégorie « {{name}} » et ses sous-catégories ?",
+    "confirmDeleteSubcategory": "Supprimer cette sous-catégorie ?",
+    "categoryInUse": "{{count}} transactions utilisent encore cette catégorie.",
     "fixedRates": "Taux journaliers fixes",
-    "users": "Utilisateurs"
+    "perDiem": "Indemnité journalière",
+    "remoteWork": "Télétravail",
+    "ratesInConstants": "Les taux Per Diem / télétravail restent dans src/lib/constants.ts.",
+    "users": "Utilisateurs",
+    "usersHint": "Gérez les utilisateurs dans Supabase. L'e-mail admin est défini via VITE_ADMIN_EMAIL."
   },
   "personal": {
     "dashboardTitle": "Tableau de bord personnel",

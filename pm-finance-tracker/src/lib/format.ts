@@ -1,3 +1,5 @@
+import { AMOUNT_MASK, areAmountsHidden } from './amountVisibility';
+
 const eur = new Intl.NumberFormat('en-IE', {
   style: 'currency',
   currency: 'EUR',
@@ -6,13 +8,21 @@ const eur = new Intl.NumberFormat('en-IE', {
 });
 
 export function formatEur(amount: number): string {
+  if (areAmountsHidden()) return AMOUNT_MASK;
   return eur.format(amount);
 }
 
 /** Signed currency, e.g. "+2 400,00 €" / "-215,00 €". */
 export function formatSigned(amount: number): string {
+  if (areAmountsHidden()) return AMOUNT_MASK;
   const sign = amount > 0 ? '+' : '';
   return sign + eur.format(amount);
+}
+
+/** Plain number for settings/rates (no currency symbol). */
+export function formatPlainAmount(amount: number): string {
+  if (areAmountsHidden()) return AMOUNT_MASK;
+  return String(amount);
 }
 
 export function formatDate(date: string | null): string {
