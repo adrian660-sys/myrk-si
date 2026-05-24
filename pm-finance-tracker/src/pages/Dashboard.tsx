@@ -1,5 +1,6 @@
 import { Fragment, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import KpiCard from '../components/KpiCard';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { computeTripBalances, cashWalletBalance } from '../lib/tripBalance';
@@ -9,6 +10,7 @@ import {
 } from '../lib/planned';
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const {
     trips, transactions, cashReceived, projectReceipts, planned, loading, error,
   } = useFinanceData();
@@ -101,39 +103,39 @@ export default function Dashboard() {
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto">
       <header>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-sm text-muted">All values in EUR.</p>
+        <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
+        <p className="text-sm text-muted">{t('dashboard.subtitle')}</p>
       </header>
 
       <section className="space-y-3">
         <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
-          Current balance
+          {t('dashboard.currentBalance')}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <KpiCard label="Cash" value={balanceBySource.cash}
             tone={balanceBySource.cash >= 0 ? 'neutral' : 'expense'}
-            hint="Cash received − cash spent" />
+            hint={t('dashboard.cashHint')} />
           <KpiCard label="DH" value={balanceBySource.dh}
             tone={balanceBySource.dh >= 0 ? 'neutral' : 'expense'}
-            hint="Sum of DH transactions" />
+            hint={t('dashboard.dhHint')} />
           <KpiCard label="Revolut" value={balanceBySource.revolut}
             tone={balanceBySource.revolut >= 0 ? 'neutral' : 'expense'}
-            hint="Sum of Revolut transactions" />
+            hint={t('dashboard.revolutHint')} />
           <KpiCard label="Total" value={balanceBySource.total}
             tone={balanceBySource.total >= 0 ? 'income' : 'expense'}
-            hint="Cash + DH + Revolut" />
+            hint={t('dashboard.totalHint')} />
         </div>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
-          Total sum
+          {t('dashboard.totalSum')}
         </h2>
         <div className="grid grid-cols-2 gap-3 md:gap-4">
-          <KpiCard label="Income" value={totals.income} tone="neutral"
-            hint="Total from project receipts" />
+          <KpiCard label={t('dashboard.income')} value={totals.income} tone="neutral"
+            hint={t('dashboard.incomeHint')} />
           <KpiCard label="Cash" value={totals.freshCash} tone="neutral"
-            hint="Total fresh cash received on trips" />
+            hint={t('dashboard.cashTripHint')} />
         </div>
         <ExpensesCard total={totals.expenses} breakdown={expenseBreakdown} />
       </section>
@@ -142,12 +144,12 @@ export default function Dashboard() {
         <div className="card-pad border-l-4 border-amber-400">
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-medium">Needs attention</div>
+              <div className="font-medium">{t('dashboard.needsAttention')}</div>
               <div className="text-sm text-muted">
-                {drafts.length} draft transaction{drafts.length === 1 ? '' : 's'} missing a date.
+                {t('dashboard.draftCount', { count: drafts.length })}
               </div>
             </div>
-            <Link className="btn-secondary" to="/transactions?filter=drafts">Review</Link>
+            <Link className="btn-secondary" to="/transactions?filter=drafts">{t('common.review')}</Link>
           </div>
         </div>
       )}
@@ -156,12 +158,12 @@ export default function Dashboard() {
         <div className="card-pad border-l-4 border-amber-400">
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-medium">Travel without a trip</div>
+              <div className="font-medium">{t('dashboard.travelWithoutTrip')}</div>
               <div className="text-sm text-muted">
-                {travelNoTrip.length} Travel transaction{travelNoTrip.length === 1 ? '' : 's'} not linked to any trip.
+                {t('dashboard.travelNoTripCount', { count: travelNoTrip.length })}
               </div>
             </div>
-            <Link className="btn-secondary" to="/transactions?warn=travel-no-trip">Review</Link>
+            <Link className="btn-secondary" to="/transactions?warn=travel-no-trip">{t('common.review')}</Link>
           </div>
         </div>
       )}
@@ -170,25 +172,25 @@ export default function Dashboard() {
         <Collapsible
           title={
             <>
-              Upcoming bills — next 30 days
+              {t('dashboard.upcomingBills')}
               {overdueCount > 0 && (
                 <span className="ml-2 chip bg-red-100 text-red-800">
-                  {overdueCount} overdue
+                  {overdueCount} {t('dashboard.overdue')}
                 </span>
               )}
             </>
           }
-          right={<Link className="text-sm text-muted hover:text-ink" to="/planned">Manage →</Link>}
+          right={<Link className="text-sm text-muted hover:text-ink" to="/planned">{t('dashboard.manage')}</Link>}
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-muted text-left">
                 <tr>
-                  <th className="px-5 py-2 font-medium">Due</th>
-                  <th className="px-5 py-2 font-medium">Description</th>
-                  <th className="px-5 py-2 font-medium">Source</th>
-                  <th className="px-5 py-2 font-medium">Category</th>
-                  <th className="px-5 py-2 font-medium text-right">Amount</th>
+                  <th className="px-5 py-2 font-medium">{t('dashboard.due')}</th>
+                  <th className="px-5 py-2 font-medium">{t('common.description')}</th>
+                  <th className="px-5 py-2 font-medium">{t('common.source')}</th>
+                  <th className="px-5 py-2 font-medium">{t('common.category')}</th>
+                  <th className="px-5 py-2 font-medium text-right">{t('common.amount')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -203,9 +205,9 @@ export default function Dashboard() {
                         </div>
                         <div className="text-xs text-muted">
                           {overdue
-                            ? `${-daysOut} day${daysOut === -1 ? '' : 's'} overdue`
-                            : daysOut === 0 ? 'today'
-                            : `in ${daysOut} day${daysOut === 1 ? '' : 's'}`}
+                            ? t('dashboard.daysOverdue', { count: -daysOut })
+                            : daysOut === 0 ? t('dashboard.today')
+                            : t('dashboard.inDays', { count: daysOut })}
                         </div>
                       </td>
                       <td className="px-5 py-2">{o.description}</td>
@@ -229,19 +231,19 @@ export default function Dashboard() {
 
       {projectionWithRunning.some((m) => m.occurrences.length > 0) && (
         <Collapsible
-          title="Cash-flow projection — next 12 months"
-          right={<Link className="text-sm text-muted hover:text-ink" to="/planned">Edit rules →</Link>}
+          title={t('dashboard.cashFlowProjection')}
+          right={<Link className="text-sm text-muted hover:text-ink" to="/planned">{t('dashboard.editRules')}</Link>}
           defaultOpen={false}
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="text-muted text-left">
                 <tr>
-                  <th className="px-5 py-2 font-medium">Month</th>
-                  <th className="px-5 py-2 font-medium text-right">Expected in</th>
-                  <th className="px-5 py-2 font-medium text-right">Expected out</th>
-                  <th className="px-5 py-2 font-medium text-right">Net</th>
-                  <th className="px-5 py-2 font-medium text-right">Projected cash</th>
+                  <th className="px-5 py-2 font-medium">{t('dashboard.month')}</th>
+                  <th className="px-5 py-2 font-medium text-right">{t('dashboard.expectedIn')}</th>
+                  <th className="px-5 py-2 font-medium text-right">{t('dashboard.expectedOut')}</th>
+                  <th className="px-5 py-2 font-medium text-right">{t('dashboard.net')}</th>
+                  <th className="px-5 py-2 font-medium text-right">{t('dashboard.projectedCash')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -266,32 +268,30 @@ export default function Dashboard() {
             </table>
           </div>
           <div className="px-5 py-2 text-xs text-muted border-t border-line">
-            "Projected cash" applies expected income/expenses to today's current cash
-            balance ({formatEur(totals.cash)}). Bank-account balances (DH / Revolut)
-            aren't tracked separately — they show as net delta only.
+            {t('dashboard.projectionNote', { balance: formatEur(totals.cash) })}
           </div>
         </Collapsible>
       )}
 
       <Collapsible
-        title="Cash balance by trip"
-        right={<Link className="text-sm text-muted hover:text-ink" to="/trips">Manage trips →</Link>}
+        title={t('dashboard.cashBalanceByTrip')}
+        right={<Link className="text-sm text-muted hover:text-ink" to="/trips">{t('dashboard.manageTrips')}</Link>}
         defaultOpen={false}
       >
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-muted text-left">
               <tr>
-                <th className="px-5 py-2 font-medium">Trip</th>
-                <th className="px-5 py-2 font-medium">Dates</th>
-                <th className="px-5 py-2 font-medium text-right">Fresh cash</th>
-                <th className="px-5 py-2 font-medium text-right">Cash spent</th>
-                <th className="px-5 py-2 font-medium text-right">Last balance</th>
+                <th className="px-5 py-2 font-medium">{t('nav.trips')}</th>
+                <th className="px-5 py-2 font-medium">{t('trips.dates')}</th>
+                <th className="px-5 py-2 font-medium text-right">{t('dashboard.freshCash')}</th>
+                <th className="px-5 py-2 font-medium text-right">{t('dashboard.cashSpent')}</th>
+                <th className="px-5 py-2 font-medium text-right">{t('dashboard.lastBalance')}</th>
               </tr>
             </thead>
             <tbody>
               {balances.length === 0 && (
-                <tr><td colSpan={5} className="px-5 py-4 text-muted">No trips yet.</td></tr>
+                <tr><td colSpan={5} className="px-5 py-4 text-muted">{t('dashboard.noTrips')}</td></tr>
               )}
               {balances.map((b) => (
                 <tr key={b.trip.id} className="border-t border-line">
@@ -346,6 +346,7 @@ function ExpensesCard({
   breakdown: { category: string; total: number; subs: { sub: string; amount: number }[] }[];
 }) {
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
   return (
     <div className="card-pad">
       <button
@@ -354,12 +355,12 @@ function ExpensesCard({
         className="w-full flex items-start justify-between text-left"
       >
         <div>
-          <div className="text-xs uppercase tracking-wide text-muted">Total expenses</div>
+          <div className="text-xs uppercase tracking-wide text-muted">{t('dashboard.totalExpenses')}</div>
           <div className="mt-2 text-2xl font-semibold tabular-nums text-ink">
             {formatEur(total)}
           </div>
           <div className="mt-1 text-xs text-muted">
-            {open ? 'Click to hide breakdown' : 'Click for breakdown by category'}
+            {open ? t('dashboard.clickToHide') : t('dashboard.clickForBreakdown')}
           </div>
         </div>
         <span className={`text-muted text-xs inline-block transition-transform mt-1 ${open ? 'rotate-90' : ''}`}>▶</span>
@@ -390,7 +391,7 @@ function ExpensesCard({
       )}
       {open && breakdown.length === 0 && (
         <div className="mt-4 pt-4 border-t border-line text-sm text-muted">
-          No expenses yet.
+          {t('dashboard.noExpenses')}
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal';
 import TransactionForm from '../components/TransactionForm';
 import { useFinanceData } from '../hooks/useFinanceData';
@@ -13,6 +14,7 @@ import type { Transaction } from '../lib/types';
 const PAGE_SIZE = 50;
 
 export default function Transactions() {
+  const { t: tr } = useTranslation();
   const { transactions, trips, reload, loading } = useFinanceData();
   const isAdmin = useIsAdmin();
   const [params, setParams] = useSearchParams();
@@ -81,11 +83,11 @@ export default function Transactions() {
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Transactions</h1>
+          <h1 className="text-2xl font-semibold">{tr('transactions.title')}</h1>
           <p className="text-sm text-muted">
-            {filtered.length} of {transactions.length} shown
-            {draftsOnly && ' · drafts only'}
-            {travelNoTripOnly && ' · Travel without trip'}
+            {tr('transactions.shown', { filtered: filtered.length, total: transactions.length })}
+            {draftsOnly && ` ${tr('transactions.draftsOnly')}`}
+            {travelNoTripOnly && ` ${tr('transactions.travelWithoutTrip')}`}
           </p>
         </div>
         <button
@@ -94,54 +96,54 @@ export default function Transactions() {
           onClick={() => downloadTransactionsCsv(filtered, trips, filterHint)}
           title="Download the rows currently shown as CSV"
         >
-          ↓ Export CSV
+          {tr('common.exportCsv')}
         </button>
       </header>
 
       <div className="card-pad grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <div>
-          <label className="label">Month</label>
+          <label className="label">{tr('transactions.month')}</label>
           <select className="input" value={filterMonth}
             onChange={(e) => updateParam('month', e.target.value)}>
-            <option value="">All</option>
+            <option value="">{tr('common.all')}</option>
             {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
           </select>
         </div>
         <div>
-          <label className="label">Trip</label>
+          <label className="label">{tr('transactions.trip')}</label>
           <select className="input" value={filterTrip}
             onChange={(e) => updateParam('trip', e.target.value)}>
-            <option value="">All</option>
+            <option value="">{tr('common.all')}</option>
             {trips.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </div>
         <div>
-          <label className="label">Category</label>
+          <label className="label">{tr('common.category')}</label>
           <select className="input" value={filterCategory}
             onChange={(e) => updateParam('category', e.target.value)}>
-            <option value="">All</option>
+            <option value="">{tr('common.all')}</option>
             {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div>
-          <label className="label">Subcategory</label>
+          <label className="label">{tr('common.subcategory')}</label>
           <select className="input" value={filterSubcategory}
             onChange={(e) => updateParam('subcategory', e.target.value)}>
-            <option value="">All</option>
+            <option value="">{tr('common.all')}</option>
             {subcategoryOptions.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div>
-          <label className="label">Source</label>
+          <label className="label">{tr('common.source')}</label>
           <select className="input" value={filterSource}
             onChange={(e) => updateParam('source', e.target.value)}>
-            <option value="">All</option>
+            <option value="">{tr('common.all')}</option>
             {FUNDING_SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
         <div className="flex items-end">
           <button className="btn-secondary w-full" onClick={() => setParams(new URLSearchParams())}>
-            Clear filters
+            {tr('transactions.clearFilters')}
           </button>
         </div>
       </div>
@@ -150,48 +152,48 @@ export default function Transactions() {
         <table className="w-full text-sm">
           <thead className="text-muted text-left bg-canvas/40">
             <tr>
-              <th className="px-4 py-2 font-medium">Date</th>
-              <th className="px-4 py-2 font-medium">Source</th>
-              <th className="px-4 py-2 font-medium">Category</th>
-              <th className="px-4 py-2 font-medium">Subcategory</th>
-              <th className="px-4 py-2 font-medium">Trip</th>
-              <th className="px-4 py-2 font-medium text-right">Amount</th>
-              <th className="px-4 py-2 font-medium">Description</th>
+              <th className="px-4 py-2 font-medium">{tr('common.date')}</th>
+              <th className="px-4 py-2 font-medium">{tr('common.source')}</th>
+              <th className="px-4 py-2 font-medium">{tr('common.category')}</th>
+              <th className="px-4 py-2 font-medium">{tr('common.subcategory')}</th>
+              <th className="px-4 py-2 font-medium">{tr('transactions.trip')}</th>
+              <th className="px-4 py-2 font-medium text-right">{tr('common.amount')}</th>
+              <th className="px-4 py-2 font-medium">{tr('common.description')}</th>
               {isAdmin && <th className="px-4 py-2 font-medium" />}
             </tr>
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={8} className="px-4 py-6 text-muted text-center">Loading…</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-muted text-center">{tr('common.loading')}</td></tr>
             )}
             {!loading && pageRows.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-6 text-muted text-center">No transactions match.</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-muted text-center">{tr('common.noMatch')}</td></tr>
             )}
             {pageRows.map((t) => (
               <tr key={t.id} className="border-t border-line">
                 <td className="px-4 py-2">
                   {t.date ? formatDate(t.date) : (
-                    <span className="chip bg-amber-100 text-amber-800">draft</span>
+                    <span className="chip bg-amber-100 text-amber-800">{tr('transactions.draft')}</span>
                   )}
                 </td>
                 <td className="px-4 py-2">
                   <span className="chip bg-canvas border border-line">{t.funding_source}</span>
                 </td>
                 <td className="px-4 py-2 text-muted">{t.category}</td>
-                <td className="px-4 py-2 text-muted">{t.subcategory ?? '—'}</td>
+                <td className="px-4 py-2 text-muted">{t.subcategory ?? tr('common.dash')}</td>
                 <td className="px-4 py-2 text-muted">
-                  {t.trip_id ? tripMap.get(t.trip_id)?.name ?? '—' : '—'}
+                  {t.trip_id ? tripMap.get(t.trip_id)?.name ?? tr('common.dash') : tr('common.dash')}
                 </td>
                 <td className={`px-4 py-2 text-right tabular-nums ${t.amount >= 0 ? 'text-income' : 'text-expense'}`}>
                   {formatSigned(t.amount)}
                 </td>
-                <td className="px-4 py-2 text-muted">{t.description || '—'}</td>
+                <td className="px-4 py-2 text-muted">{t.description || tr('common.dash')}</td>
                 {isAdmin && (
                   <td className="px-4 py-2 text-right whitespace-nowrap">
                     <button className="text-xs text-muted hover:text-ink mr-2"
-                      onClick={() => setEditing(t)}>Edit</button>
+                      onClick={() => setEditing(t)}>{tr('common.edit')}</button>
                     <button className="text-xs text-muted hover:text-expense"
-                      onClick={() => handleDelete(t.id)}>Delete</button>
+                      onClick={() => handleDelete(t.id)}>{tr('common.delete')}</button>
                   </td>
                 )}
               </tr>
@@ -202,17 +204,17 @@ export default function Transactions() {
 
       {totalPages > 1 && (
         <div className="flex justify-between items-center text-sm text-muted">
-          <div>Page {page} of {totalPages}</div>
+          <div>{tr('transactions.page', { page, total: totalPages })}</div>
           <div className="flex gap-2">
             <button className="btn-secondary" disabled={page <= 1}
-              onClick={() => updateParam('page', String(page - 1))}>Previous</button>
+              onClick={() => updateParam('page', String(page - 1))}>{tr('transactions.previous')}</button>
             <button className="btn-secondary" disabled={page >= totalPages}
-              onClick={() => updateParam('page', String(page + 1))}>Next</button>
+              onClick={() => updateParam('page', String(page + 1))}>{tr('transactions.next')}</button>
           </div>
         </div>
       )}
 
-      <Modal open={!!editing} onClose={() => setEditing(null)} title="Edit transaction">
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={tr('transactions.editTransaction')}>
         {editing && (
           <TransactionForm
             initial={editing}
