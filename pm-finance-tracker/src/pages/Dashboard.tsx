@@ -20,18 +20,15 @@ export default function Dashboard() {
   );
 
   const totals = useMemo(() => {
-    // Income = project receipts + per-trip cash received (everything I got).
-    // Expenses = all negative transactions except Transfers.
-    const projectIncome = projectReceipts.reduce((s, r) => s + r.amount, 0);
-    const tripCashIncome = cashReceived.reduce((s, c) => s + c.amount, 0);
-    const income = projectIncome + tripCashIncome;
+    const income = projectReceipts.reduce((s, r) => s + r.amount, 0);
+    const freshCash = cashReceived.reduce((s, c) => s + c.amount, 0);
     let expenses = 0;
     for (const t of transactions) {
       if (t.category === 'Transfer') continue;
       if (t.amount < 0) expenses += Math.abs(t.amount);
     }
     return {
-      income, expenses,
+      income, freshCash, expenses,
       cash: cashWalletBalance(transactions, cashReceived),
     };
   }, [transactions, cashReceived, projectReceipts]);
@@ -139,7 +136,7 @@ export default function Dashboard() {
 
       <section className="space-y-3">
         <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
-          Balances by source
+          Current balance
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <KpiCard label="Cash" value={balanceBySource.cash}
@@ -159,15 +156,15 @@ export default function Dashboard() {
 
       <section className="space-y-3">
         <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
-          Performance — all time
+          Total sum
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-          <KpiCard label="Total Income" value={totals.income} tone="income"
-            hint="Project receipts + trip cash received" />
-          <KpiCard label="Total Cash" value={totals.cash}
-            tone={totals.cash >= 0 ? 'neutral' : 'expense'}
-            hint="Cash received − cash spent" />
-          <KpiCard label="Total Expenses" value={totals.expenses} tone="expense" />
+          <KpiCard label="Income" value={totals.income} tone="income"
+            hint="Total from project receipts" />
+          <KpiCard label="Cash" value={totals.freshCash} tone="income"
+            hint="Total fresh cash received on trips" />
+          <KpiCard label="Total Expenses" value={totals.expenses} tone="expense"
+            hint="Sum of all expenses" />
         </div>
       </section>
 

@@ -5,7 +5,7 @@ import TransactionForm from '../components/TransactionForm';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
-import { CATEGORIES, FUNDING_SOURCES } from '../lib/constants';
+import { CATEGORIES, FUNDING_SOURCES, SUBCATEGORIES } from '../lib/constants';
 import { formatDate, formatSigned, monthKey, monthLabel } from '../lib/format';
 import { downloadTransactionsCsv } from '../lib/csv';
 import type { Transaction } from '../lib/types';
@@ -20,6 +20,7 @@ export default function Transactions() {
   const filterMonth = params.get('month') ?? '';
   const filterTrip = params.get('trip') ?? '';
   const filterCategory = params.get('category') ?? '';
+  const filterSubcategory = params.get('subcategory') ?? '';
   const filterSource = params.get('source') ?? '';
   const draftsOnly = params.get('filter') === 'drafts';
   const travelNoTripOnly = params.get('warn') === 'travel-no-trip';
@@ -28,12 +29,19 @@ export default function Transactions() {
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value); else next.delete(key);
-    // Only reset to page 1 when a filter changes — not when paging itself.
     if (key !== 'page') next.delete('page');
+    if (key === 'category') next.delete('subcategory');
     setParams(next);
   }
 
   const tripMap = useMemo(() => new Map(trips.map((t) => [t.id, t])), [trips]);
+
+  const subcategoryOptions = useMemo(() => {
+    if (filterCategory && filterCategory in SUBCATEGORIES) {
+      return SUBCATEGORIES[filterCategory as keyof typeof SUBCATEGORIES];
+    }
+    return [...new Set(Object.values(SUBCATEGORIES).flat())];
+  }, [filterCategory]);
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -42,10 +50,11 @@ export default function Transactions() {
       if (filterMonth && (!t.date || monthKey(t.date) !== filterMonth)) return false;
       if (filterTrip && t.trip_id !== filterTrip) return false;
       if (filterCategory && t.category !== filterCategory) return false;
+      if (filterSubcategory && t.subcategory !== filterSubcategory) return false;
       if (filterSource && t.funding_source !== filterSource) return false;
       return true;
     });
-  }, [transactions, draftsOnly, travelNoTripOnly, filterMonth, filterTrip, filterCategory, filterSource]);
+  }, [transactions, draftsOnly, travelNoTripOnly, filterMonth, filterTrip, filterCategory, filterSubcategory, filterSource]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -65,7 +74,7 @@ export default function Transactions() {
     reload();
   }
 
-  const filterHint = [filterMonth, filterCategory, filterSource]
+  const filterHint = [filterMonth, filterCategory, filterSubcategory, filterSource]
     .filter(Boolean).join('_') || (draftsOnly ? 'drafts' : 'all');
 
   return (
@@ -89,7 +98,7 @@ export default function Transactions() {
         </button>
       </header>
 
-      <div className="card-pad grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="card-pad grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <div>
           <label className="label">Month</label>
           <select className="input" value={filterMonth}
@@ -115,6 +124,14 @@ export default function Transactions() {
           </select>
         </div>
         <div>
+          <label className="label">Subcategory</label>
+          <select className="input" value={filterSubcategory}
+            onChange={(e) => updateParam('subcategory', e.target.value)}>
+            <option value="">All</option>
+            {subcategoryOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+        <div>
           <label className="label">Source</label>
           <select className="input" value={filterSource}
             onChange={(e) => updateParam('source', e.target.value)}>
@@ -136,6 +153,7 @@ export default function Transactions() {
               <th className="px-4 py-2 font-medium">Date</th>
               <th className="px-4 py-2 font-medium">Source</th>
               <th className="px-4 py-2 font-medium">Category</th>
+              <th className="px-4 py-2 font-medium">Subcategory</th>
               <th className="px-4 py-2 font-medium">Trip</th>
               <th className="px-4 py-2 font-medium text-right">Amount</th>
               <th className="px-4 py-2 font-medium">Description</th>
@@ -144,10 +162,10 @@ export default function Transactions() {
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={7} className="px-4 py-6 text-muted text-center">Loading…</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-muted text-center">Loading…</td></tr>
             )}
             {!loading && pageRows.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-6 text-muted text-center">No transactions match.</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-muted text-center">No transactions match.</td></tr>
             )}
             {pageRows.map((t) => (
               <tr key={t.id} className="border-t border-line">
@@ -159,7 +177,8 @@ export default function Transactions() {
                 <td className="px-4 py-2">
                   <span className="chip bg-canvas border border-line">{t.funding_source}</span>
                 </td>
-                <td className="px-4 py-2 text-muted">{t.category}{t.subcategory ? ` · ${t.subcategory}` : ''}</td>
+                <td className="px-4 py-2 text-muted">{t.category}</td>
+                <td className="px-4 py-2 text-muted">{t.subcategory ?? '—'}</td>
                 <td className="px-4 py-2 text-muted">
                   {t.trip_id ? tripMap.get(t.trip_id)?.name ?? '—' : '—'}
                 </td>

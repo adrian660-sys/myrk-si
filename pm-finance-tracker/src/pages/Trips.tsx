@@ -84,6 +84,21 @@ export default function Trips() {
                 )}
               </tr>
             ))}
+            {balances.length > 1 && (() => {
+              const n = balances.length;
+              const avgFresh = balances.reduce((s, b) => s + b.freshCash, 0) / n;
+              const avgExp = balances.reduce((s, b) => s + b.cashExpenses, 0) / n;
+              return (
+                <tr className="border-t-2 border-line bg-canvas/40">
+                  <td className="px-4 py-2 text-xs text-muted uppercase tracking-wide">Avg per trip</td>
+                  <td className="px-4 py-2" />
+                  <td className="px-4 py-2 text-right tabular-nums text-muted">{formatEur(avgFresh)}</td>
+                  <td className="px-4 py-2 text-right tabular-nums text-muted">−{formatEur(avgExp)}</td>
+                  <td className="px-4 py-2" />
+                  {isAdmin && <td className="px-4 py-2" />}
+                </tr>
+              );
+            })()}
           </tbody>
         </table>
       </div>
