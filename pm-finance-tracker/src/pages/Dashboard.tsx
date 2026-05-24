@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import KpiCard from '../components/KpiCard';
 import DonutChart from '../components/DonutChart';
 import { useFinanceData } from '../hooks/useFinanceData';
-import { computeTripBalances, currentCashBalance } from '../lib/tripBalance';
+import { computeTripBalances, cashWalletBalance } from '../lib/tripBalance';
 import { formatEur, formatSigned, formatDate, monthKey, monthLabel } from '../lib/format';
 import {
   projectMonths, upcomingOccurrences, todayIsoLocal, daysBetween,
@@ -24,8 +24,11 @@ export default function Dashboard() {
       if (t.amount > 0) income += t.amount;
       else expenses += Math.abs(t.amount);
     }
-    return { income, expenses, net: income - expenses, cash: currentCashBalance(balances) };
-  }, [transactions, balances]);
+    return {
+      income, expenses, net: income - expenses,
+      cash: cashWalletBalance(transactions, cashReceived),
+    };
+  }, [transactions, cashReceived]);
 
   // Balance per funding source. Cash uses the trip rollup (fresh cash − cash
   // expenses); DH and Revolut sum every transaction posted to that source
@@ -108,7 +111,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <KpiCard label="Cash" value={balanceBySource.cash}
             tone={balanceBySource.cash >= 0 ? 'neutral' : 'expense'}
-            hint={`After ${balances.length} trip${balances.length === 1 ? '' : 's'}`} />
+            hint="Cash received − cash spent" />
           <KpiCard label="DH" value={balanceBySource.dh}
             tone={balanceBySource.dh >= 0 ? 'neutral' : 'expense'}
             hint="Sum of DH transactions" />

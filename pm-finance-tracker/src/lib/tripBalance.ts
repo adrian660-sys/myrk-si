@@ -60,7 +60,29 @@ export function computeTripBalances(
   return result;
 }
 
-/** Current cash balance = balance after the most recent trip. */
+/**
+ * Current cash wallet balance — the simple "sum of cash I received minus all
+ * cash expenses" view. Includes:
+ *   - every entry in cash_received (per-trip fresh cash deposits)
+ *   - every Cash transaction's signed amount (positive Cash/Income +,
+ *     negative Cash expenses −)
+ *
+ * This is independent of trips: even cash spent after the last trip ended
+ * (or before the first trip started) is reflected here. The per-trip
+ * "Last balance" column in computeTripBalances is a separate snapshot view.
+ */
+export function cashWalletBalance(
+  transactions: Transaction[],
+  cashReceived: CashReceived[]
+): number {
+  const txnSum = transactions
+    .filter((t) => t.funding_source === 'Cash')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const depositsSum = cashReceived.reduce((sum, c) => sum + c.amount, 0);
+  return depositsSum + txnSum;
+}
+
+/** Snapshot helper — balance after the most recent trip (per-trip rollup). */
 export function currentCashBalance(balances: TripBalance[]): number {
   return balances.length ? balances[balances.length - 1].lastBalance : 0;
 }
