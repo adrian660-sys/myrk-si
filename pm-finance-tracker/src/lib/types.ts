@@ -47,6 +47,28 @@ export interface CashReceived {
   trip_id: string;
   amount: number;
   date: string;
+  funding_source: FundingSource;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string;
+  end_date: string | null;
+  active: boolean;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface ProjectReceipt {
+  id: string;
+  project_id: string;
+  date: string;
+  amount: number;
+  funding_source: FundingSource;
   notes: string | null;
   created_at: string;
 }

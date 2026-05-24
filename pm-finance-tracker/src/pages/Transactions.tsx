@@ -134,21 +134,20 @@ export default function Transactions() {
           <thead className="text-muted text-left bg-canvas/40">
             <tr>
               <th className="px-4 py-2 font-medium">Date</th>
-              <th className="px-4 py-2 font-medium">Description</th>
               <th className="px-4 py-2 font-medium">Source</th>
               <th className="px-4 py-2 font-medium">Category</th>
               <th className="px-4 py-2 font-medium">Trip</th>
-              <th className="px-4 py-2 font-medium">Bill</th>
               <th className="px-4 py-2 font-medium text-right">Amount</th>
+              <th className="px-4 py-2 font-medium">Description</th>
               {isAdmin && <th className="px-4 py-2 font-medium" />}
             </tr>
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={8} className="px-4 py-6 text-muted text-center">Loading…</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-muted text-center">Loading…</td></tr>
             )}
             {!loading && pageRows.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-6 text-muted text-center">No transactions match.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-muted text-center">No transactions match.</td></tr>
             )}
             {pageRows.map((t) => (
               <tr key={t.id} className="border-t border-line">
@@ -157,7 +156,6 @@ export default function Transactions() {
                     <span className="chip bg-amber-100 text-amber-800">draft</span>
                   )}
                 </td>
-                <td className="px-4 py-2">{t.description}</td>
                 <td className="px-4 py-2">
                   <span className="chip bg-canvas border border-line">{t.funding_source}</span>
                 </td>
@@ -165,10 +163,10 @@ export default function Transactions() {
                 <td className="px-4 py-2 text-muted">
                   {t.trip_id ? tripMap.get(t.trip_id)?.name ?? '—' : '—'}
                 </td>
-                <td className="px-4 py-2 text-muted">{t.bill_status || '—'}</td>
                 <td className={`px-4 py-2 text-right tabular-nums ${t.amount >= 0 ? 'text-income' : 'text-expense'}`}>
                   {formatSigned(t.amount)}
                 </td>
+                <td className="px-4 py-2 text-muted">{t.description || '—'}</td>
                 {isAdmin && (
                   <td className="px-4 py-2 text-right whitespace-nowrap">
                     <button className="text-xs text-muted hover:text-ink mr-2"

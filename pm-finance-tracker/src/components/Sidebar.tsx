@@ -10,10 +10,10 @@ interface Item {
 const items: Item[] = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/transactions', label: 'Transactions' },
-  { to: '/income', label: 'Income' },
+  { to: '/projects', label: 'Projects' },
   { to: '/trips', label: 'Trips' },
   { to: '/planned', label: 'Planned & bills' },
-  { to: '/import', label: 'Import' },
+  { to: '/import', label: 'Import', adminOnly: true },
   { to: '/settings', label: 'Settings', adminOnly: true },
 ];
 

@@ -10,7 +10,9 @@ import {
 } from '../lib/planned';
 
 export default function Dashboard() {
-  const { trips, transactions, cashReceived, incomeRecords, planned, loading, error } = useFinanceData();
+  const {
+    trips, transactions, cashReceived, projectReceipts, planned, loading, error,
+  } = useFinanceData();
 
   const balances = useMemo(
     () => computeTripBalances(trips, transactions, cashReceived),
@@ -18,44 +20,59 @@ export default function Dashboard() {
   );
 
   const totals = useMemo(() => {
-    // Income = research payments from income_records (DH / Revolut).
+    // Income = project receipts + per-trip cash received (everything I got).
     // Expenses = all negative transactions except Transfers.
-    const income = incomeRecords.reduce((s, r) => s + r.amount, 0);
+    const projectIncome = projectReceipts.reduce((s, r) => s + r.amount, 0);
+    const tripCashIncome = cashReceived.reduce((s, c) => s + c.amount, 0);
+    const income = projectIncome + tripCashIncome;
     let expenses = 0;
     for (const t of transactions) {
       if (t.category === 'Transfer') continue;
       if (t.amount < 0) expenses += Math.abs(t.amount);
     }
     return {
-      income, expenses, net: income - expenses,
+      income, expenses,
       cash: cashWalletBalance(transactions, cashReceived),
     };
-  }, [transactions, cashReceived, incomeRecords]);
+  }, [transactions, cashReceived, projectReceipts]);
 
   // Balance per funding source.
-  // Cash = cash_received − cash expenses (from trips).
-  // DH / Revolut = income_records for that source + signed transactions.
+  // Cash    = Cash deposits (cash_received + project_receipts where source=Cash)
+  //           + signed Cash transactions
+  // DH      = DH deposits (same two sources)    + signed DH transactions
+  // Revolut = Revolut deposits (same two sources) + signed Revolut transactions
   const balanceBySource = useMemo(() => {
-    let dh = 0, revolut = 0;
-    for (const t of transactions) {
-      if (t.funding_source === 'DH') dh += t.amount;
-      else if (t.funding_source === 'Revolut') revolut += t.amount;
+    let cash = 0, dh = 0, revolut = 0;
+    for (const c of cashReceived) {
+      if (c.funding_source === 'Cash') cash += c.amount;
+      else if (c.funding_source === 'DH') dh += c.amount;
+      else if (c.funding_source === 'Revolut') revolut += c.amount;
     }
-    for (const r of incomeRecords) {
-      if (r.funding_source === 'DH') dh += r.amount;
+    for (const r of projectReceipts) {
+      if (r.funding_source === 'Cash') cash += r.amount;
+      else if (r.funding_source === 'DH') dh += r.amount;
       else if (r.funding_source === 'Revolut') revolut += r.amount;
     }
-    const cash = totals.cash;
+    for (const t of transactions) {
+      if (t.funding_source === 'Cash') cash += t.amount;
+      else if (t.funding_source === 'DH') dh += t.amount;
+      else if (t.funding_source === 'Revolut') revolut += t.amount;
+    }
     return { cash, dh, revolut, total: cash + dh + revolut };
-  }, [transactions, incomeRecords, totals.cash]);
+  }, [cashReceived, projectReceipts, transactions]);
 
   const monthly = useMemo(() => {
     const map = new Map<string, { income: number; travel: number; business: number; net: number }>();
-    // Income rows come from income_records, not transactions.
-    for (const r of incomeRecords) {
+    for (const r of projectReceipts) {
       const k = monthKey(r.date);
       const row = map.get(k) ?? { income: 0, travel: 0, business: 0, net: 0 };
       row.income += r.amount;
+      map.set(k, row);
+    }
+    for (const c of cashReceived) {
+      const k = monthKey(c.date);
+      const row = map.get(k) ?? { income: 0, travel: 0, business: 0, net: 0 };
+      row.income += c.amount;
       map.set(k, row);
     }
     for (const t of transactions) {
@@ -73,7 +90,7 @@ export default function Dashboard() {
     return [...map.entries()]
       .sort((a, b) => b[0].localeCompare(a[0]))
       .slice(0, 12);
-  }, [transactions, incomeRecords]);
+  }, [transactions, cashReceived, projectReceipts]);
 
   const donut = useMemo(() => {
     let travel = 0, business = 0;
@@ -93,7 +110,6 @@ export default function Dashboard() {
     () => transactions.filter((t) => t.category === 'Travel' && !t.trip_id),
     [transactions]
   );
-  const recent = useMemo(() => transactions.slice(0, 10), [transactions]);
 
   const upcoming = useMemo(
     () => upcomingOccurrences(planned, { ahead: 30, pastDays: 7 }),
@@ -102,7 +118,7 @@ export default function Dashboard() {
   const today = todayIsoLocal();
   const overdueCount = upcoming.filter((o) => o.due_date < today).length;
 
-  const projection = useMemo(() => projectMonths(planned, 6), [planned]);
+  const projection = useMemo(() => projectMonths(planned, 12), [planned]);
   const projectionWithRunning = useMemo(() => {
     let running = totals.cash;
     return projection.map((m) => {
@@ -146,10 +162,12 @@ export default function Dashboard() {
           Performance — all time
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-          <KpiCard label="Total Income" value={totals.income} tone="income" />
+          <KpiCard label="Total Income" value={totals.income} tone="income"
+            hint="Project receipts + trip cash received" />
+          <KpiCard label="Total Cash" value={totals.cash}
+            tone={totals.cash >= 0 ? 'neutral' : 'expense'}
+            hint="Cash received − cash spent" />
           <KpiCard label="Total Expenses" value={totals.expenses} tone="expense" />
-          <KpiCard label="Net" value={totals.net}
-            tone={totals.net >= 0 ? 'income' : 'expense'} />
         </div>
       </section>
 
@@ -244,7 +262,7 @@ export default function Dashboard() {
       {projectionWithRunning.some((m) => m.occurrences.length > 0) && (
         <section className="card">
           <header className="px-5 py-3 border-b border-line flex items-center justify-between">
-            <h2 className="font-semibold">Cash-flow projection — next 6 months</h2>
+            <h2 className="font-semibold">Cash-flow projection — next 12 months</h2>
             <Link className="text-sm text-muted hover:text-ink" to="/planned">Edit rules →</Link>
           </header>
           <div className="overflow-x-auto">
@@ -365,42 +383,6 @@ export default function Dashboard() {
           <DonutChart segments={donut} />
         </section>
       </div>
-
-      <section className="card">
-        <header className="px-5 py-3 border-b border-line flex items-center justify-between">
-          <h2 className="font-semibold">Recent transactions</h2>
-          <Link className="text-sm text-muted hover:text-ink" to="/transactions">See all →</Link>
-        </header>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-muted text-left">
-              <tr>
-                <th className="px-5 py-2 font-medium">Date</th>
-                <th className="px-5 py-2 font-medium">Description</th>
-                <th className="px-5 py-2 font-medium">Source</th>
-                <th className="px-5 py-2 font-medium">Category</th>
-                <th className="px-5 py-2 font-medium text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recent.length === 0 && (
-                <tr><td colSpan={5} className="px-5 py-4 text-muted">No transactions yet.</td></tr>
-              )}
-              {recent.map((t) => (
-                <tr key={t.id} className="border-t border-line">
-                  <td className="px-5 py-2 text-muted">{formatDate(t.date)}</td>
-                  <td className="px-5 py-2">{t.description}</td>
-                  <td className="px-5 py-2"><span className="chip bg-canvas border border-line">{t.funding_source}</span></td>
-                  <td className="px-5 py-2 text-muted">{t.category}{t.subcategory ? ` · ${t.subcategory}` : ''}</td>
-                  <td className={`px-5 py-2 text-right tabular-nums ${t.amount >= 0 ? 'text-income' : 'text-expense'}`}>
-                    {formatSigned(t.amount)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
     </div>
   );
 }

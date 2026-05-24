@@ -10,13 +10,14 @@ export interface TripBalance {
 /**
  * Cash carried-forward balance per trip.
  *
- *   lastBalance(N) = lastBalance(N-1) + freshCash(N) - cashExpenses(N)
- *   lastBalance(0) =                    freshCash(0) - cashExpenses(0)
+ *   lastBalance(N) = lastBalance(N-1) + freshCash(N) − cashExpenses(N)
+ *   lastBalance(0) =                    freshCash(0) − cashExpenses(0)
  *
  * Cash expenses for a trip are every Cash transaction with a negative amount
- * that is either linked to the trip directly, or unlinked but dated between
- * the end of the previous trip and the end of this trip — a flight bought
- * months earlier still belongs to the trip it is manually linked to.
+ * dated strictly after the previous trip's end_date and on/before this trip's
+ * end_date. trip_id linking is irrelevant here — the rollup is purely
+ * date-based, so a flight bought weeks before the trip still counts against
+ * whichever trip's window contains that date.
  *
  * Trips are processed in chronological order of end_date.
  */
@@ -28,7 +29,7 @@ export function computeTripBalances(
   const ordered = [...trips].sort((a, b) => a.end_date.localeCompare(b.end_date));
 
   const cashOut = transactions.filter(
-    (t) => t.funding_source === 'Cash' && t.amount < 0
+    (t) => t.funding_source === 'Cash' && t.amount < 0 && !!t.date
   );
 
   const result: TripBalance[] = [];
@@ -42,13 +43,8 @@ export function computeTripBalances(
 
     const cashExpenses = cashOut
       .filter((t) => {
-        if (t.trip_id === trip.id) return true;
-        // Unlinked cash spend dated within this trip's window.
-        if (t.trip_id === null && t.date) {
-          const afterPrev = prevEnd === null || t.date > prevEnd;
-          return afterPrev && t.date <= trip.end_date;
-        }
-        return false;
+        const afterPrev = prevEnd === null || (t.date! > prevEnd);
+        return afterPrev && t.date! <= trip.end_date;
       })
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 

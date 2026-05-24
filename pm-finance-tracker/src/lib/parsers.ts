@@ -112,13 +112,16 @@ export function parseCsv(
     // Travel rows must be linked to a trip — otherwise we can't tell which
     // trip's budget the expense came out of. Flag for review.
     const travelMissingTrip = category === 'Travel' && !trip_id;
-    const needsReview = !get(iCat) || !get(iSource) || travelMissingTrip;
+    // Subcategory is mandatory for every category except Transfer.
+    const sub = get(iSub) || null;
+    const subRequiredMissing = category !== 'Transfer' && !sub;
+    const needsReview = !get(iCat) || !get(iSource) || travelMissingTrip || subRequiredMissing;
     out.push({
       date: parseDate(get(iDate)),
       description: get(iDesc) || '(no description)',
       funding_source: source,
       category,
-      subcategory: get(iSub) || null,
+      subcategory: sub,
       amount,
       notes: get(iNotes) || null,
       bill_status: bill,

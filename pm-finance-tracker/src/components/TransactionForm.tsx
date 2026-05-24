@@ -71,7 +71,11 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!description.trim()) { setError('Description is required.'); return; }
+    // Subcategory is mandatory for every category that has subcategories
+    // defined (Income / Business / Travel). Only Transfer is exempt.
+    if (subs.length > 0 && !subcategory) {
+      setError('Subcategory is required.'); return;
+    }
     if (Number.isNaN(finalAmount) || finalAmount === 0) {
       setError('Enter a non-zero amount.'); return;
     }
@@ -79,7 +83,7 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
     setSaving(true);
     const payload = {
       date: date || null,
-      description: description.trim(),
+      description: description.trim() || '—',
       funding_source: fundingSource,
       category,
       subcategory: subcategory || null,
@@ -117,7 +121,7 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
       </div>
 
       <div>
-        <label className="label">Description</label>
+        <label className="label">Description <span className="text-muted">(optional)</span></label>
         <input className="input" value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="e.g. Hotel Zurich 4 nights" />

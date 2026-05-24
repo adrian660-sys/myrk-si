@@ -5,7 +5,8 @@ import { useIsAdmin } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { computeTripBalances } from '../lib/tripBalance';
 import { formatDate, formatEur, todayIso } from '../lib/format';
-import type { Trip } from '../lib/types';
+import { FUNDING_SOURCES } from '../lib/constants';
+import type { FundingSource, Trip } from '../lib/types';
 
 export default function Trips() {
   const { trips, transactions, cashReceived, reload, loading } = useFinanceData();
@@ -195,6 +196,7 @@ function CashReceivedForm({
 }) {
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(trip.start_date);
+  const [source, setSource] = useState<FundingSource>('Cash');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -206,7 +208,8 @@ function CashReceivedForm({
     if (Number.isNaN(n) || n <= 0) { setError('Enter a positive amount.'); return; }
     setSaving(true);
     const { error: err } = await supabase.from('cash_received').insert({
-      trip_id: trip.id, amount: n, date, notes: notes || null,
+      trip_id: trip.id, amount: n, date, funding_source: source,
+      notes: notes || null,
     });
     setSaving(false);
     if (err) { setError(err.message); return; }
@@ -218,10 +221,19 @@ function CashReceivedForm({
       <div className="text-sm text-muted">
         Trip: <span className="text-ink font-medium">{trip.name}</span>
       </div>
-      <div>
-        <label className="label">Amount (€)</label>
-        <input className="input" type="number" step="0.01" value={amount}
-          onChange={(e) => setAmount(e.target.value)} />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="label">Amount (€)</label>
+          <input className="input" type="number" step="0.01" value={amount}
+            onChange={(e) => setAmount(e.target.value)} />
+        </div>
+        <div>
+          <label className="label">Received via</label>
+          <select className="input" value={source}
+            onChange={(e) => setSource(e.target.value as FundingSource)}>
+            {FUNDING_SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
       </div>
       <div>
         <label className="label">Date</label>
@@ -235,7 +247,7 @@ function CashReceivedForm({
       <div className="flex justify-end gap-2">
         <button type="button" className="btn-secondary" onClick={onCancel}>Cancel</button>
         <button type="submit" className="btn-primary" disabled={saving}>
-          {saving ? 'Saving…' : 'Record cash'}
+          {saving ? 'Saving…' : 'Record receipt'}
         </button>
       </div>
     </form>
