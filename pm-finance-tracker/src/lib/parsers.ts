@@ -87,6 +87,8 @@ export function parseCsv(
   }
 
   const tripByName = new Map(trips.map((t) => [t.name.toLowerCase().trim(), t.id]));
+  // Fallback map: normalise diacritics + collapse whitespace for fuzzy matching.
+  const tripByNorm = new Map(trips.map((t) => [normaliseForMatch(t.name), t.id]));
 
   const out: ParsedTransaction[] = [];
   for (let row = 1; row < lines.length; row++) {
@@ -101,7 +103,11 @@ export function parseCsv(
       : billRaw === '/' ? '/' : '';
 
     const tripRaw = get(iTrip);
-    const trip_id = tripRaw ? tripByName.get(tripRaw.toLowerCase().trim()) ?? null : null;
+    const trip_id = tripRaw
+      ? (tripByName.get(tripRaw.toLowerCase().trim())
+          ?? tripByNorm.get(normaliseForMatch(tripRaw))
+          ?? null)
+      : null;
 
     const needsReview = !get(iCat) || !get(iSource);
     out.push({
@@ -201,6 +207,13 @@ function parseAmount(raw: string): number {
     : cleaned.replace(/,/g, '');
   const n = Number(normalised);
   return Number.isFinite(n) ? n : 0;
+}
+
+/** Strip diacritics, lowercase, collapse whitespace — used for fuzzy trip matching. */
+function normaliseForMatch(s: string): string {
+  return s.toLowerCase().trim()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, ' ');
 }
 
 function splitCsvLine(line: string): string[] {
