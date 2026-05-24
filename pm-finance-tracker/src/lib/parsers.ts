@@ -56,8 +56,12 @@ export function parseCsv(text: string): ParsedTransaction[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length === 0) return [];
 
-  const header = splitCsvLine(lines[0]).map((h) => h.trim().toLowerCase());
-  const idx = (name: string) => header.indexOf(name);
+  // Tolerant header matching: lowercase, strip non-alphanumerics, then map
+  // common aliases (e.g. "Funding Source", "Type", Slovenian variants) onto
+  // our canonical column names. Without this a CSV typed by a human collapses
+  // every row to "0 will import".
+  const headerCells = splitCsvLine(lines[0]).map(canonicaliseHeader);
+  const idx = (name: string) => headerCells.indexOf(name);
 
   const iDate = idx('date');
   const iDesc = idx('description');
@@ -75,14 +79,14 @@ export function parseCsv(text: string): ParsedTransaction[] {
 
     const amount = parseAmount(get(iAmt));
     const source = (get(iSource) || 'Cash') as FundingSource;
-    const category = (get(iCat) || 'Business') as Category;
+    const category = (canoniseCategory(get(iCat)) || 'Business') as Category;
     const billRaw = get(iBill);
     const bill: BillStatus = billRaw === '📎 Bill' || billRaw === 'Bill' ? '📎 Bill'
       : billRaw === '/' ? '/' : '';
 
     const needsReview = !get(iCat) || !get(iSource);
     out.push({
-      date: get(iDate) || null,
+      date: parseDate(get(iDate)),
       description: get(iDesc) || '(no description)',
       funding_source: source,
       category,
@@ -97,6 +101,63 @@ export function parseCsv(text: string): ParsedTransaction[] {
     });
   }
   return out;
+}
+
+/**
+ * Normalise a header cell into our canonical column name. "Funding Source",
+ * "funding_source", "Source", "Račun" all resolve to "funding_source".
+ */
+function canonicaliseHeader(raw: string): string {
+  const key = raw.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const aliases: Record<string, string> = {
+    date: 'date', datum: 'date',
+    description: 'description', desc: 'description', opis: 'description',
+    funding_source: 'funding_source', source: 'funding_source', funding: 'funding_source',
+    category: 'category', type: 'category', kategorija: 'category', tip: 'category',
+    subcategory: 'subcategory', sub_category: 'subcategory', subcat: 'subcategory',
+    podkategorija: 'subcategory', sub: 'subcategory',
+    amount: 'amount', znesek: 'amount', value: 'amount',
+    notes: 'notes', note: 'notes', opomba: 'notes', opombe: 'notes',
+    bill: 'bill', racun: 'bill', invoice: 'bill',
+    trip: 'trip', potovanje: 'trip',
+  };
+  return aliases[key] ?? key;
+}
+
+/** Map common category synonyms onto our 4 canonical names. */
+function canoniseCategory(raw: string): string {
+  const k = raw.toLowerCase().trim();
+  if (!k) return '';
+  if (k.startsWith('income')) return 'Income';
+  if (k.startsWith('business')) return 'Business';
+  if (k.startsWith('travel')) return 'Travel';
+  if (k.startsWith('transfer')) return 'Transfer';
+  if (k === 'other expenses' || k === 'other') return 'Travel';
+  // Preserve already-canonical capitalisation if it matches exactly.
+  return raw.trim();
+}
+
+/**
+ * Parse any of: "2025-02-21", "21.2.2025", "21. 2. 2025", "21. 02.25",
+ * "21/02/2025", "02/21/2025". Returns YYYY-MM-DD or null.
+ */
+function parseDate(raw: string): string | null {
+  if (!raw) return null;
+  const s = raw.trim();
+  // Already ISO
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) {
+    const [, y, mo, d] = m;
+    return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  // DD.MM.YYYY / DD/MM/YYYY (with optional spaces, 2 or 4 digit year)
+  m = s.match(/^(\d{1,2})[.\s/-]+(\d{1,2})[.\s/-]+(\d{2,4})$/);
+  if (m) {
+    let [, d, mo, y] = m;
+    if (y.length === 2) y = '20' + y;
+    return `${y}-${mo.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  return null;
 }
 
 /**
