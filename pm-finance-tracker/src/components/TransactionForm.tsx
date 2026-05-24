@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import {
   CATEGORIES,
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function TransactionForm({ trips, initial, onSaved, onCancel }: Props) {
+  const { t } = useTranslation();
   const editing = !!initial;
 
   const [date, setDate] = useState<string>(initial?.date ?? todayIso());
@@ -74,10 +76,10 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
     // Subcategory is mandatory for every category that has subcategories
     // defined (Income / Business / Travel). Only Transfer is exempt.
     if (subs.length > 0 && !subcategory) {
-      setError('Subcategory is required.'); return;
+      setError(t('transactionForm.subcategoryRequired')); return;
     }
     if (Number.isNaN(finalAmount) || finalAmount === 0) {
-      setError('Enter a non-zero amount.'); return;
+      setError(t('transactionForm.enterNonZeroAmount')); return;
     }
 
     setSaving(true);
@@ -112,7 +114,7 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
             onChange={(e) => setDate(e.target.value)} />
         </div>
         <div>
-          <label className="label">Funding source</label>
+          <label className="label">{t('transactionForm.fundingSource')}</label>
           <select className="input" value={fundingSource}
             onChange={(e) => setFundingSource(e.target.value as FundingSource)}>
             {FUNDING_SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -121,10 +123,10 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
       </div>
 
       <div>
-        <label className="label">Description <span className="text-muted">(optional)</span></label>
+        <label className="label">{t('common.description')} <span className="text-muted">{t('common.optional')}</span></label>
         <input className="input" value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="e.g. Hotel Zurich 4 nights" />
+          placeholder={t('transactionForm.descriptionPlaceholder')} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -149,12 +151,12 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
 
       {isFixedRate ? (
         <div className="rounded-md border border-line bg-canvas p-3">
-          <label className="label">How many days? (€{rate}/day)</label>
+          <label className="label">{t('transactionForm.howManyDays', { rate })}</label>
           <input className="input" type="number" min={0} step={1}
             value={days} onChange={(e) => setDays(e.target.value)}
-            placeholder="e.g. 4" />
+            placeholder={t('transactionForm.daysPlaceholder')} />
           <div className="mt-2 text-sm text-muted">
-            Calculated amount: <span className="font-medium text-ink">
+            {t('transactionForm.calculatedAmount')} <span className="font-medium text-ink">
               {Number.isFinite(finalAmount) ? finalAmount.toFixed(2) : '—'} €
             </span>
           </div>
@@ -162,17 +164,17 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
       ) : (
         <div className="grid grid-cols-3 gap-3">
           <div className="col-span-2">
-            <label className="label">Amount (€)</label>
+            <label className="label">{t('common.amountEur')}</label>
             <input className="input" type="number" step="0.01"
               value={amount} onChange={(e) => setAmount(e.target.value)} />
           </div>
           <div>
-            <label className="label">Direction</label>
+            <label className="label">{t('common.direction')}</label>
             <select className="input" value={direction}
               onChange={(e) => setDirection(e.target.value as 'in' | 'out')}
               disabled={category === 'Income'}>
-              <option value="out">Out</option>
-              <option value="in">In</option>
+              <option value="out">{t('common.directionOut')}</option>
+              <option value="in">{t('common.directionIn')}</option>
             </select>
           </div>
         </div>
@@ -180,7 +182,7 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label">Trip (optional)</label>
+          <label className="label">{t('transactionForm.tripOptional')}</label>
           <select className="input" value={tripId}
             onChange={(e) => setTripId(e.target.value)}>
             <option value="">—</option>
@@ -190,18 +192,18 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
           </select>
         </div>
         <div>
-          <label className="label">Bill</label>
+          <label className="label">{t('transactionForm.bill')}</label>
           <select className="input" value={billStatus}
             onChange={(e) => setBillStatus(e.target.value as BillStatus)}>
             {BILL_STATUSES.map((b) => (
-              <option key={b || 'missing'} value={b}>{b || '(missing)'}</option>
+              <option key={b || 'missing'} value={b}>{b || t('transactionForm.missingBill')}</option>
             ))}
           </select>
         </div>
       </div>
 
       <div>
-        <label className="label">Notes</label>
+        <label className="label">{t('common.notes')}</label>
         <textarea className="input min-h-[60px]" value={notes}
           onChange={(e) => setNotes(e.target.value)} />
       </div>
@@ -211,11 +213,11 @@ export default function TransactionForm({ trips, initial, onSaved, onCancel }: P
       <div className="flex justify-end gap-2 pt-2">
         {onCancel && (
           <button type="button" className="btn-secondary" onClick={onCancel} disabled={saving}>
-            Cancel
+            {t('common.cancel')}
           </button>
         )}
         <button type="submit" className="btn-primary" disabled={saving}>
-          {saving ? 'Saving…' : editing ? 'Save changes' : 'Add transaction'}
+          {saving ? t('common.saving') : editing ? t('transactionForm.saveChanges') : t('transactionForm.addTransaction')}
         </button>
       </div>
     </form>

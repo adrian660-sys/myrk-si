@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
@@ -8,6 +9,7 @@ import { formatDate, formatEur, todayIso } from '../lib/format';
 import type { FundingSource, Project, ProjectReceipt } from '../lib/types';
 
 export default function Projects() {
+  const { t } = useTranslation();
   const { projects, projectReceipts, reload, loading } = useFinanceData();
   const isAdmin = useIsAdmin();
   const [projectModal, setProjectModal] = useState<{ project: Project | null } | null>(null);
@@ -51,23 +53,23 @@ export default function Projects() {
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-4">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Projects</h1>
+          <h1 className="text-2xl font-semibold">{t('projects.title')}</h1>
           <p className="text-sm text-muted">
-            Research projects and the funds they bring in.
-            Total received: <span className="text-income font-medium">{formatEur(grandTotal)}</span>
+            {t('projects.subtitle')}
+            {' '}{t('projects.totalReceived')}: <span className="text-income font-medium">{formatEur(grandTotal)}</span>
           </p>
         </div>
         {isAdmin && (
           <button className="btn-primary" onClick={() => setProjectModal({ project: null })}>
-            + New project
+            {t('projects.newProject')}
           </button>
         )}
       </header>
 
-      {loading && <div className="card-pad text-muted">Loading…</div>}
+      {loading && <div className="card-pad text-muted">{t('common.loading')}</div>}
 
       {!loading && projects.length === 0 && (
-        <div className="card-pad text-muted">No projects yet.</div>
+        <div className="card-pad text-muted">{t('projects.noProjects')}</div>
       )}
 
       <div className="space-y-3">
@@ -80,26 +82,26 @@ export default function Projects() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="font-semibold">{p.name}</h2>
-                    {!p.active && <span className="chip bg-gray-100 text-gray-700">archived</span>}
+                    {!p.active && <span className="chip bg-gray-100 text-gray-700">{t('projects.archived')}</span>}
                   </div>
                   <div className="text-xs text-muted">
-                    {formatDate(p.start_date)}{p.end_date ? ` – ${formatDate(p.end_date)}` : ' – ongoing'}
+                    {formatDate(p.start_date)}{p.end_date ? ` – ${formatDate(p.end_date)}` : ` ${t('projects.ongoing')}`}
                     {p.description && <span> · {p.description}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
-                    <div className="text-xs text-muted">Total received</div>
+                    <div className="text-xs text-muted">{t('projects.totalReceived')}</div>
                     <div className="font-medium text-income tabular-nums">{formatEur(total)}</div>
                   </div>
                   {isAdmin && (
                     <div className="flex flex-col gap-1">
                       <button className="text-xs text-muted hover:text-ink"
-                        onClick={() => setReceiptModal(p)}>+ Receipt</button>
+                        onClick={() => setReceiptModal(p)}>{t('projects.addReceipt')}</button>
                       <button className="text-xs text-muted hover:text-ink"
-                        onClick={() => setProjectModal({ project: p })}>Edit</button>
+                        onClick={() => setProjectModal({ project: p })}>{t('common.edit')}</button>
                       <button className="text-xs text-muted hover:text-expense"
-                        onClick={() => deleteProject(p.id)}>Delete</button>
+                        onClick={() => deleteProject(p.id)}>{t('common.delete')}</button>
                     </div>
                   )}
                 </div>
@@ -108,16 +110,16 @@ export default function Projects() {
                 <table className="w-full text-sm">
                   <thead className="text-muted text-left bg-canvas/40">
                     <tr>
-                      <th className="px-5 py-2 font-medium">Date</th>
-                      <th className="px-5 py-2 font-medium">Source</th>
-                      <th className="px-5 py-2 font-medium">Notes</th>
-                      <th className="px-5 py-2 font-medium text-right">Amount</th>
+                      <th className="px-5 py-2 font-medium">{t('common.date')}</th>
+                      <th className="px-5 py-2 font-medium">{t('common.source')}</th>
+                      <th className="px-5 py-2 font-medium">{t('common.notes')}</th>
+                      <th className="px-5 py-2 font-medium text-right">{t('common.amount')}</th>
                       {isAdmin && <th className="px-5 py-2 font-medium" />}
                     </tr>
                   </thead>
                   <tbody>
                     {receipts.length === 0 && (
-                      <tr><td colSpan={isAdmin ? 5 : 4} className="px-5 py-3 text-muted">No receipts yet.</td></tr>
+                      <tr><td colSpan={isAdmin ? 5 : 4} className="px-5 py-3 text-muted">{t('projects.noReceipts')}</td></tr>
                     )}
                     {receipts.map((r) => (
                       <tr key={r.id} className="border-t border-line">
@@ -125,14 +127,14 @@ export default function Projects() {
                         <td className="px-5 py-2">
                           <span className="chip bg-canvas border border-line">{r.funding_source}</span>
                         </td>
-                        <td className="px-5 py-2 text-muted">{r.notes ?? '—'}</td>
+                        <td className="px-5 py-2 text-muted">{r.notes ?? t('common.dash')}</td>
                         <td className="px-5 py-2 text-right tabular-nums text-income">
                           {formatEur(r.amount)}
                         </td>
                         {isAdmin && (
                           <td className="px-5 py-2 text-right">
                             <button className="text-xs text-muted hover:text-expense"
-                              onClick={() => deleteReceipt(r.id)}>Delete</button>
+                              onClick={() => deleteReceipt(r.id)}>{t('common.delete')}</button>
                           </td>
                         )}
                       </tr>
@@ -148,7 +150,7 @@ export default function Projects() {
       <Modal
         open={!!projectModal}
         onClose={() => setProjectModal(null)}
-        title={projectModal?.project ? 'Edit project' : 'New project'}
+        title={projectModal?.project ? t('projects.editProjectTitle') : t('projects.newProjectTitle')}
       >
         {projectModal && (
           <ProjectForm
@@ -159,7 +161,7 @@ export default function Projects() {
         )}
       </Modal>
 
-      <Modal open={!!receiptModal} onClose={() => setReceiptModal(null)} title="Add receipt">
+      <Modal open={!!receiptModal} onClose={() => setReceiptModal(null)} title={t('projects.addReceiptTitle')}>
         {receiptModal && (
           <ReceiptForm
             project={receiptModal}
@@ -179,6 +181,7 @@ function ProjectForm({
   onSaved: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [startDate, setStartDate] = useState(initial?.start_date ?? todayIso());
@@ -191,8 +194,8 @@ function ProjectForm({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!name.trim()) { setError('Name required.'); return; }
-    if (endDate && endDate < startDate) { setError('End date is before start date.'); return; }
+    if (!name.trim()) { setError(t('projects.nameRequired')); return; }
+    if (endDate && endDate < startDate) { setError(t('common.endBeforeStart')); return; }
 
     setSaving(true);
     const payload = {
@@ -214,22 +217,22 @@ function ProjectForm({
   return (
     <form onSubmit={submit} className="space-y-4">
       <div>
-        <label className="label">Name</label>
+        <label className="label">{t('common.name')}</label>
         <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
       </div>
       <div>
-        <label className="label">Description <span className="text-muted">(optional)</span></label>
+        <label className="label">{t('common.description')} <span className="text-muted">{t('common.optional')}</span></label>
         <input className="input" value={description}
           onChange={(e) => setDescription(e.target.value)} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label">Start</label>
+          <label className="label">{t('common.start')}</label>
           <input className="input" type="date" value={startDate}
             onChange={(e) => setStartDate(e.target.value)} />
         </div>
         <div>
-          <label className="label">End <span className="text-muted">(optional)</span></label>
+          <label className="label">{t('common.end')} <span className="text-muted">{t('common.optional')}</span></label>
           <input className="input" type="date" value={endDate}
             onChange={(e) => setEndDate(e.target.value)} />
         </div>
@@ -237,18 +240,18 @@ function ProjectForm({
       <label className="flex items-center gap-2 text-sm">
         <input type="checkbox" checked={active}
           onChange={(e) => setActive(e.target.checked)} />
-        Active
+        {t('common.active')}
       </label>
       <div>
-        <label className="label">Notes</label>
+        <label className="label">{t('common.notes')}</label>
         <textarea className="input" value={notes}
           onChange={(e) => setNotes(e.target.value)} />
       </div>
       {error && <div className="text-sm text-expense">{error}</div>}
       <div className="flex justify-end gap-2">
-        <button type="button" className="btn-secondary" onClick={onCancel}>Cancel</button>
+        <button type="button" className="btn-secondary" onClick={onCancel}>{t('common.cancel')}</button>
         <button type="submit" className="btn-primary" disabled={saving}>
-          {saving ? 'Saving…' : initial ? 'Save project' : 'Create project'}
+          {saving ? t('common.saving') : initial ? t('projects.saveProject') : t('projects.createProject')}
         </button>
       </div>
     </form>
@@ -262,6 +265,7 @@ function ReceiptForm({
   onSaved: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useTranslation();
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(todayIso());
   const [source, setSource] = useState<FundingSource>('DH');
@@ -273,7 +277,7 @@ function ReceiptForm({
     e.preventDefault();
     setError(null);
     const n = parseFloat(amount);
-    if (Number.isNaN(n) || n <= 0) { setError('Enter a positive amount.'); return; }
+    if (Number.isNaN(n) || n <= 0) { setError(t('common.enterPositiveAmount')); return; }
 
     setSaving(true);
     const { error: err } = await supabase.from('project_receipts').insert({
@@ -288,16 +292,16 @@ function ReceiptForm({
   return (
     <form onSubmit={submit} className="space-y-4">
       <div className="text-sm text-muted">
-        Project: <span className="text-ink font-medium">{project.name}</span>
+        {t('projects.projectLabel')} <span className="text-ink font-medium">{project.name}</span>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="label">Amount (€)</label>
+          <label className="label">{t('common.amountEur')}</label>
           <input className="input" type="number" step="0.01" min="0.01"
             value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
         <div>
-          <label className="label">Received via</label>
+          <label className="label">{t('common.receivedVia')}</label>
           <select className="input" value={source}
             onChange={(e) => setSource(e.target.value as FundingSource)}>
             {FUNDING_SOURCES.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -305,20 +309,20 @@ function ReceiptForm({
         </div>
       </div>
       <div>
-        <label className="label">Date</label>
+        <label className="label">{t('common.date')}</label>
         <input className="input" type="date" value={date}
           onChange={(e) => setDate(e.target.value)} />
       </div>
       <div>
-        <label className="label">Notes</label>
+        <label className="label">{t('common.notes')}</label>
         <input className="input" value={notes}
           onChange={(e) => setNotes(e.target.value)} />
       </div>
       {error && <div className="text-sm text-expense">{error}</div>}
       <div className="flex justify-end gap-2">
-        <button type="button" className="btn-secondary" onClick={onCancel}>Cancel</button>
+        <button type="button" className="btn-secondary" onClick={onCancel}>{t('common.cancel')}</button>
         <button type="submit" className="btn-primary" disabled={saving}>
-          {saving ? 'Saving…' : 'Record receipt'}
+          {saving ? t('common.saving') : t('common.recordReceipt')}
         </button>
       </div>
     </form>
