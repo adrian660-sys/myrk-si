@@ -9,6 +9,10 @@ import Trips from './pages/Trips';
 import Planned from './pages/Planned';
 import Import from './pages/Import';
 import Settings from './pages/Settings';
+import PersonalDashboard from './pages/personal/Dashboard';
+import PersonalTransactions from './pages/personal/Transactions';
+import PersonalPlanned from './pages/personal/Planned';
+import PersonalSettings from './pages/personal/Settings';
 
 export default function App() {
   const { session, loading, role } = useAuth();
@@ -46,6 +50,22 @@ export default function App() {
         <Route
           path="/settings"
           element={role === 'admin' ? <Settings /> : <Navigate to="/dashboard" replace />}
+        />
+        <Route
+          path="/personal/dashboard"
+          element={role === 'admin' ? <PersonalDashboard /> : <Navigate to="/dashboard" replace />}
+        />
+        <Route
+          path="/personal/transactions"
+          element={role === 'admin' ? <PersonalTransactions /> : <Navigate to="/dashboard" replace />}
+        />
+        <Route
+          path="/personal/planned"
+          element={role === 'admin' ? <PersonalPlanned /> : <Navigate to="/dashboard" replace />}
+        />
+        <Route
+          path="/personal/settings"
+          element={role === 'admin' ? <PersonalSettings /> : <Navigate to="/dashboard" replace />}
         />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

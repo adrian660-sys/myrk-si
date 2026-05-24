@@ -7,7 +7,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { email, role, signOut } = useAuth();
   const { t, i18n } = useTranslation();
 
-  const items = [
+  const pmItems = [
     { to: '/dashboard', label: t('nav.dashboard') },
     { to: '/transactions', label: t('nav.transactions') },
     { to: '/projects', label: t('nav.projects') },
@@ -15,6 +15,13 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     { to: '/planned', label: t('nav.planned') },
     { to: '/import', label: t('nav.import'), adminOnly: true },
     { to: '/settings', label: t('nav.settings'), adminOnly: true },
+  ];
+
+  const personalItems = [
+    { to: '/personal/dashboard', label: t('nav.personalDashboard') },
+    { to: '/personal/transactions', label: t('nav.personalTransactions') },
+    { to: '/personal/planned', label: t('nav.personalPlanned') },
+    { to: '/personal/settings', label: t('nav.personalSettings') },
   ];
 
   return (
@@ -26,8 +33,8 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <span className="chip mt-2 bg-white/10 text-white/80">{t('nav.readOnly')}</span>
         )}
       </div>
-      <nav className="flex-1 px-2 py-4 space-y-0.5">
-        {items
+      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
+        {pmItems
           .filter((i) => !i.adminOnly || role === 'admin')
           .map((i) => (
             <NavLink
@@ -45,6 +52,29 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               {i.label}
             </NavLink>
           ))}
+        {role === 'admin' && (
+          <>
+            <div className="px-3 pt-4 pb-1 text-[10px] uppercase tracking-wider text-white/40">
+              {t('nav.personalSection')}
+            </div>
+            {personalItems.map((i) => (
+              <NavLink
+                key={i.to}
+                to={i.to}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  `block px-3 py-2 rounded-md text-sm ${
+                    isActive
+                      ? 'bg-white/10 text-white'
+                      : 'text-white/60 hover:bg-sidebarHover hover:text-white'
+                  }`
+                }
+              >
+                {i.label}
+              </NavLink>
+            ))}
+          </>
+        )}
       </nav>
       <div className="p-3 border-t border-white/10 space-y-1">
         <div className="flex gap-1 px-3 py-1">

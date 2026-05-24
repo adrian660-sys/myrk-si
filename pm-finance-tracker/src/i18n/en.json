@@ -42,7 +42,12 @@
     "import": "Import",
     "settings": "Settings",
     "signOut": "Sign out",
-    "readOnly": "read-only"
+    "readOnly": "read-only",
+    "personalSection": "Personal",
+    "personalDashboard": "Personal dashboard",
+    "personalTransactions": "Personal transactions",
+    "personalPlanned": "Personal planned",
+    "personalSettings": "Personal settings"
   },
   "login": {
     "subtitle": "Sign in to continue.",
@@ -208,5 +213,36 @@
     "categories": "Categories",
     "fixedRates": "Fixed daily rates",
     "users": "Users"
+  },
+  "personal": {
+    "dashboardTitle": "Personal dashboard",
+    "dashboardSubtitle": "Private finances — admin only.",
+    "balanceBySource": "Balance by funding source",
+    "incomeVsExpenses": "Income vs expenses",
+    "incomeAll": "Income (all time)",
+    "expenseAll": "Expenses (all time)",
+    "incomeMonth": "Income (this month)",
+    "expenseMonth": "Expenses (this month)",
+    "expenseBreakdown": "Expense breakdown by category",
+    "noExpenses": "No expenses recorded yet.",
+    "monthlyChart": "Monthly income vs expenses",
+    "income": "Income",
+    "expenses": "Expenses",
+    "transactionsTitle": "Personal transactions",
+    "add": "Add",
+    "update": "Update",
+    "addPlanned": "Add planned",
+    "pause": "Pause",
+    "resume": "Resume",
+    "confirmDeleteTx": "Delete this transaction?",
+    "fillRequired": "Please fill all required fields.",
+    "sign": "Sign",
+    "expenseSign": "Expense (−)",
+    "incomeSign": "Income (+)",
+    "select": "Select…",
+    "typeExpense": "Expense",
+    "typeIncome": "Income",
+    "typeTransfer": "Transfer",
+    "fundingSource": "Funding source"
   }
 }

@@ -42,7 +42,12 @@
     "import": "Import",
     "settings": "Paramètres",
     "signOut": "Se déconnecter",
-    "readOnly": "lecture seule"
+    "readOnly": "lecture seule",
+    "personalSection": "Personnel",
+    "personalDashboard": "Tableau de bord perso",
+    "personalTransactions": "Transactions perso",
+    "personalPlanned": "Prévu perso",
+    "personalSettings": "Paramètres perso"
   },
   "login": {
     "subtitle": "Connectez-vous pour continuer.",
@@ -208,5 +213,36 @@
     "categories": "Catégories",
     "fixedRates": "Taux journaliers fixes",
     "users": "Utilisateurs"
+  },
+  "personal": {
+    "dashboardTitle": "Tableau de bord personnel",
+    "dashboardSubtitle": "Finances privées — admin uniquement.",
+    "balanceBySource": "Solde par source",
+    "incomeVsExpenses": "Revenus vs dépenses",
+    "incomeAll": "Revenus (total)",
+    "expenseAll": "Dépenses (total)",
+    "incomeMonth": "Revenus (ce mois)",
+    "expenseMonth": "Dépenses (ce mois)",
+    "expenseBreakdown": "Dépenses par catégorie",
+    "noExpenses": "Aucune dépense enregistrée.",
+    "monthlyChart": "Revenus vs dépenses par mois",
+    "income": "Revenus",
+    "expenses": "Dépenses",
+    "transactionsTitle": "Transactions personnelles",
+    "add": "Ajouter",
+    "update": "Mettre à jour",
+    "addPlanned": "Ajouter prévu",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "confirmDeleteTx": "Supprimer cette transaction ?",
+    "fillRequired": "Veuillez remplir les champs obligatoires.",
+    "sign": "Signe",
+    "expenseSign": "Dépense (−)",
+    "incomeSign": "Revenu (+)",
+    "select": "Choisir…",
+    "typeExpense": "Dépense",
+    "typeIncome": "Revenu",
+    "typeTransfer": "Transfert",
+    "fundingSource": "Source de fonds"
   }
 }
