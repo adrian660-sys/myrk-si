@@ -27,7 +27,8 @@ export default function Transactions() {
   function updateParam(key: string, value: string) {
     const next = new URLSearchParams(params);
     if (value) next.set(key, value); else next.delete(key);
-    next.delete('page');
+    // Only reset to page 1 when a filter changes — not when paging itself.
+    if (key !== 'page') next.delete('page');
     setParams(next);
   }
 
