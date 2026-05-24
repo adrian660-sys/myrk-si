@@ -22,6 +22,7 @@ export default function Transactions() {
   const filterCategory = params.get('category') ?? '';
   const filterSource = params.get('source') ?? '';
   const draftsOnly = params.get('filter') === 'drafts';
+  const travelNoTripOnly = params.get('warn') === 'travel-no-trip';
   const page = parseInt(params.get('page') ?? '1', 10);
 
   function updateParam(key: string, value: string) {
@@ -37,13 +38,14 @@ export default function Transactions() {
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
       if (draftsOnly && t.date) return false;
+      if (travelNoTripOnly && (t.category !== 'Travel' || t.trip_id)) return false;
       if (filterMonth && (!t.date || monthKey(t.date) !== filterMonth)) return false;
       if (filterTrip && t.trip_id !== filterTrip) return false;
       if (filterCategory && t.category !== filterCategory) return false;
       if (filterSource && t.funding_source !== filterSource) return false;
       return true;
     });
-  }, [transactions, draftsOnly, filterMonth, filterTrip, filterCategory, filterSource]);
+  }, [transactions, draftsOnly, travelNoTripOnly, filterMonth, filterTrip, filterCategory, filterSource]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -74,6 +76,7 @@ export default function Transactions() {
           <p className="text-sm text-muted">
             {filtered.length} of {transactions.length} shown
             {draftsOnly && ' · drafts only'}
+            {travelNoTripOnly && ' · Travel without trip'}
           </p>
         </div>
         <button

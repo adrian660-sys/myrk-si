@@ -109,7 +109,10 @@ export function parseCsv(
           ?? null)
       : null;
 
-    const needsReview = !get(iCat) || !get(iSource);
+    // Travel rows must be linked to a trip — otherwise we can't tell which
+    // trip's budget the expense came out of. Flag for review.
+    const travelMissingTrip = category === 'Travel' && !trip_id;
+    const needsReview = !get(iCat) || !get(iSource) || travelMissingTrip;
     out.push({
       date: parseDate(get(iDate)),
       description: get(iDesc) || '(no description)',

@@ -89,6 +89,10 @@ export default function Dashboard() {
   }, [transactions]);
 
   const drafts = useMemo(() => transactions.filter((t) => !t.date), [transactions]);
+  const travelNoTrip = useMemo(
+    () => transactions.filter((t) => t.category === 'Travel' && !t.trip_id),
+    [transactions]
+  );
   const recent = useMemo(() => transactions.slice(0, 10), [transactions]);
 
   const upcoming = useMemo(
@@ -159,6 +163,20 @@ export default function Dashboard() {
               </div>
             </div>
             <Link className="btn-secondary" to="/transactions?filter=drafts">Review</Link>
+          </div>
+        </div>
+      )}
+
+      {travelNoTrip.length > 0 && (
+        <div className="card-pad border-l-4 border-amber-400">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium">Travel without a trip</div>
+              <div className="text-sm text-muted">
+                {travelNoTrip.length} Travel transaction{travelNoTrip.length === 1 ? '' : 's'} not linked to any trip.
+              </div>
+            </div>
+            <Link className="btn-secondary" to="/transactions?warn=travel-no-trip">Review</Link>
           </div>
         </div>
       )}
