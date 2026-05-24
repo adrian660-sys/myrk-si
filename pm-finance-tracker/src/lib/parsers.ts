@@ -52,7 +52,10 @@ export function categoriseRevolut(code: string, moneyIn: number): CategorisedRow
 // and falls into the review screen.
 // ---------------------------------------------------------------------------
 
-export function parseCsv(text: string): ParsedTransaction[] {
+export function parseCsv(
+  text: string,
+  trips: { id: string; name: string }[] = []
+): ParsedTransaction[] {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length === 0) return [];
 
@@ -68,9 +71,22 @@ export function parseCsv(text: string): ParsedTransaction[] {
   const iSource = idx('funding_source');
   const iCat = idx('category');
   const iSub = idx('subcategory');
-  const iAmt = idx('amount');
+  let iAmt = idx('amount');
   const iNotes = idx('notes');
   const iBill = idx('bill');
+  const iTrip = idx('trip');
+
+  // If no "amount" header was found, assume the rightmost column is the amount
+  // and look for the first numeric value to lock it in. CSVs exported by some
+  // tools leave the value column unlabelled.
+  if (iAmt === -1 && lines.length > 1) {
+    const sampleCols = splitCsvLine(lines[1]);
+    for (let i = sampleCols.length - 1; i >= 0; i--) {
+      if (parseAmount(sampleCols[i].trim()) !== 0) { iAmt = i; break; }
+    }
+  }
+
+  const tripByName = new Map(trips.map((t) => [t.name.toLowerCase().trim(), t.id]));
 
   const out: ParsedTransaction[] = [];
   for (let row = 1; row < lines.length; row++) {
@@ -84,6 +100,9 @@ export function parseCsv(text: string): ParsedTransaction[] {
     const bill: BillStatus = billRaw === '📎 Bill' || billRaw === 'Bill' ? '📎 Bill'
       : billRaw === '/' ? '/' : '';
 
+    const tripRaw = get(iTrip);
+    const trip_id = tripRaw ? tripByName.get(tripRaw.toLowerCase().trim()) ?? null : null;
+
     const needsReview = !get(iCat) || !get(iSource);
     out.push({
       date: parseDate(get(iDate)),
@@ -94,7 +113,7 @@ export function parseCsv(text: string): ParsedTransaction[] {
       amount,
       notes: get(iNotes) || null,
       bill_status: bill,
-      trip_id: null,
+      trip_id,
       needsReview,
       duplicate: false,
       include: !needsReview,

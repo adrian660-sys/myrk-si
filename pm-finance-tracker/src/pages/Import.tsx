@@ -80,7 +80,7 @@ export default function Import() {
       try {
         setBusy('parsing');
         const text = await file.text();
-        const raw = parseCsv(text);
+        const raw = parseCsv(text, trips);
         const rows = markDuplicates(raw, transactions);
         const { storagePath } = await uploadToStorage(file, kind);
         const drive = await callDriveUpload(storagePath, file.name, kind).catch(() => null);
