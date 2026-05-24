@@ -184,10 +184,15 @@ function parseDate(raw: string): string | null {
  * ("1.234,56") format. The rule: whichever of `.` or `,` appears last is
  * treated as the decimal separator; the other is a thousands separator and
  * stripped. Plain "298.68" -> 298.68; "29.868,00" -> 29868.
+ *
+ * Also normalises Unicode minus variants (U+2212, en-dash, em-dash) that
+ * Google Sheets and some PDF exports emit instead of ASCII '-'.
  */
 function parseAmount(raw: string): number {
   if (!raw) return 0;
-  const cleaned = raw.replace(/[€\s]/g, '');
+  const cleaned = raw
+    .replace(/[−–—]/g, '-')
+    .replace(/[€\s]/g, '');
   if (!cleaned) return 0;
   const dot = cleaned.lastIndexOf('.');
   const com = cleaned.lastIndexOf(',');
