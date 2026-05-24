@@ -10,7 +10,7 @@ import {
 } from '../lib/planned';
 
 export default function Dashboard() {
-  const { trips, transactions, cashReceived, planned, loading, error } = useFinanceData();
+  const { trips, transactions, cashReceived, incomeRecords, planned, loading, error } = useFinanceData();
 
   const balances = useMemo(
     () => computeTripBalances(trips, transactions, cashReceived),
@@ -18,49 +18,62 @@ export default function Dashboard() {
   );
 
   const totals = useMemo(() => {
-    let income = 0, expenses = 0;
+    // Income = research payments from income_records (DH / Revolut).
+    // Expenses = all negative transactions except Transfers.
+    const income = incomeRecords.reduce((s, r) => s + r.amount, 0);
+    let expenses = 0;
     for (const t of transactions) {
       if (t.category === 'Transfer') continue;
-      if (t.amount > 0) income += t.amount;
-      else expenses += Math.abs(t.amount);
+      if (t.amount < 0) expenses += Math.abs(t.amount);
     }
     return {
       income, expenses, net: income - expenses,
       cash: cashWalletBalance(transactions, cashReceived),
     };
-  }, [transactions, cashReceived]);
+  }, [transactions, cashReceived, incomeRecords]);
 
-  // Balance per funding source. Cash uses the trip rollup (fresh cash − cash
-  // expenses); DH and Revolut sum every transaction posted to that source
-  // (positive = money in, negative = money out). Transfers ARE included on
-  // both sides so a DH→Revolut move correctly decreases DH and increases
-  // Revolut.
+  // Balance per funding source.
+  // Cash = cash_received − cash expenses (from trips).
+  // DH / Revolut = income_records for that source + signed transactions.
   const balanceBySource = useMemo(() => {
     let dh = 0, revolut = 0;
     for (const t of transactions) {
       if (t.funding_source === 'DH') dh += t.amount;
       else if (t.funding_source === 'Revolut') revolut += t.amount;
     }
+    for (const r of incomeRecords) {
+      if (r.funding_source === 'DH') dh += r.amount;
+      else if (r.funding_source === 'Revolut') revolut += r.amount;
+    }
     const cash = totals.cash;
     return { cash, dh, revolut, total: cash + dh + revolut };
-  }, [transactions, totals.cash]);
+  }, [transactions, incomeRecords, totals.cash]);
 
   const monthly = useMemo(() => {
     const map = new Map<string, { income: number; travel: number; business: number; net: number }>();
+    // Income rows come from income_records, not transactions.
+    for (const r of incomeRecords) {
+      const k = monthKey(r.date);
+      const row = map.get(k) ?? { income: 0, travel: 0, business: 0, net: 0 };
+      row.income += r.amount;
+      map.set(k, row);
+    }
     for (const t of transactions) {
       if (!t.date || t.category === 'Transfer') continue;
       const k = monthKey(t.date);
       const row = map.get(k) ?? { income: 0, travel: 0, business: 0, net: 0 };
-      if (t.category === 'Income') row.income += t.amount;
       if (t.category === 'Travel') row.travel += Math.abs(Math.min(t.amount, 0));
       if (t.category === 'Business') row.business += Math.abs(Math.min(t.amount, 0));
+      map.set(k, row);
+    }
+    for (const [k, row] of map) {
       row.net = row.income - row.travel - row.business;
       map.set(k, row);
     }
     return [...map.entries()]
       .sort((a, b) => b[0].localeCompare(a[0]))
       .slice(0, 12);
-  }, [transactions]);
+  }, [transactions, incomeRecords]);
 
   const donut = useMemo(() => {
     let travel = 0, business = 0;

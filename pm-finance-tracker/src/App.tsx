@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
+import Income from './pages/Income';
 import Trips from './pages/Trips';
 import Planned from './pages/Planned';
 import Import from './pages/Import';
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/login" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/transactions" element={<Transactions />} />
+        <Route path="/income" element={<Income />} />
         <Route path="/trips" element={<Trips />} />
         <Route path="/planned" element={<Planned />} />
         <Route path="/import" element={<Import />} />

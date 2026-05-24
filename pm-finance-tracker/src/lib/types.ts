@@ -1,5 +1,16 @@
 export type FundingSource = 'Cash' | 'DH' | 'Revolut';
 export type Category = 'Income' | 'Business' | 'Travel' | 'Transfer';
+export type IncomeFundingSource = 'DH' | 'Revolut';
+
+export interface IncomeRecord {
+  id: string;
+  date: string;
+  description: string;
+  amount: number;
+  funding_source: IncomeFundingSource;
+  notes: string | null;
+  created_at: string;
+}
 export type BillStatus = '📎 Bill' | '/' | '';
 export type ImportSource = 'DH_PDF' | 'Revolut_PDF' | 'CSV' | 'manual';
 export type Role = 'admin' | 'guest';
