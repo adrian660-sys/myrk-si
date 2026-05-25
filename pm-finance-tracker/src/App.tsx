@@ -7,6 +7,9 @@ import Transactions from './pages/Transactions';
 import Projects from './pages/Projects';
 import Trips from './pages/Trips';
 import Planned from './pages/Planned';
+import Clients from './pages/Clients';
+import Invoices from './pages/Invoices';
+import InvoiceDetail from './pages/InvoiceDetail';
 import Import from './pages/Import';
 import Settings from './pages/Settings';
 import PersonalDashboard from './pages/personal/Dashboard';
@@ -43,6 +46,13 @@ export default function App() {
         <Route path="/income" element={<Navigate to="/projects" replace />} />
         <Route path="/trips" element={<Trips />} />
         <Route path="/planned" element={<Planned />} />
+        <Route path="/clients" element={<Clients />} />
+        <Route path="/invoices" element={<Invoices />} />
+        <Route
+          path="/invoices/new"
+          element={role === 'admin' ? <InvoiceDetail /> : <Navigate to="/invoices" replace />}
+        />
+        <Route path="/invoices/:id" element={<InvoiceDetail />} />
         <Route
           path="/import"
           element={role === 'admin' ? <Import /> : <Navigate to="/dashboard" replace />}

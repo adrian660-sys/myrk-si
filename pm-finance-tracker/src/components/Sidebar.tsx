@@ -14,6 +14,8 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     { to: '/projects', label: t('nav.projects') },
     { to: '/trips', label: t('nav.trips') },
     { to: '/planned', label: t('nav.planned') },
+    { to: '/invoices', label: t('nav.invoices') },
+    { to: '/clients', label: t('nav.clients') },
     { to: '/import', label: t('nav.import'), adminOnly: true },
     { to: '/settings', label: t('nav.settings'), adminOnly: true },
   ];

@@ -146,3 +146,98 @@ export interface ParsedTransaction {
    */
   include: boolean;
 }
+
+// ─── Invoicing ────────────────────────────────────────────────────────────
+
+export interface BusinessSettings {
+  id: number;
+  legal_name: string;
+  display_name: string;
+  address_line1: string;
+  address_line2: string | null;
+  postal_code: string;
+  city: string;
+  country: string;
+  tax_id: string;
+  registration_id: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  vat_notice: string;
+  place_of_issue: string;
+  default_due_days: number;
+  default_bank_account_id: string | null;
+  updated_at: string;
+}
+
+export interface BankAccount {
+  id: string;
+  name: string;
+  iban: string;
+  bic: string | null;
+  bank_name: string | null;
+  bank_address: string | null;
+  is_active: boolean;
+  position: number;
+  created_at: string;
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  is_company: boolean;
+  address_line1: string | null;
+  address_line2: string | null;
+  postal_code: string | null;
+  city: string | null;
+  country: string | null;
+  tax_id: string | null;
+  registration_id: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export type InvoiceType = 'invoice' | 'proforma';
+export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'cancelled';
+
+export interface Invoice {
+  id: string;
+  type: InvoiceType;
+  invoice_number: string;
+  sequence_year: number;
+  sequence_in_year: number;
+  client_id: string;
+  bank_account_id: string;
+  issue_date: string;
+  service_date: string;
+  due_date: string;
+  status: InvoiceStatus;
+  subtotal: number;
+  discount_total: number;
+  total: number;
+  reference_number: string | null;
+  place_of_issue: string;
+  vat_notice: string | null;
+  notes: string | null;
+  paid_on: string | null;
+  transaction_id: string | null;
+  project_receipt_id: string | null;
+  sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvoiceLine {
+  id: string;
+  invoice_id: string;
+  position: number;
+  description: string;
+  quantity: number;
+  unit: string | null;
+  unit_price: number;
+  discount_pct: number;
+  total: number;
+  created_at: string;
+}
