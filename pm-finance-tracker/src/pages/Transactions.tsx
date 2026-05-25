@@ -83,7 +83,7 @@ export default function Transactions() {
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">{tr('transactions.title')}</h1>
+          <h1 className="font-display text-3xl">{tr('transactions.title')}</h1>
           <p className="text-sm text-muted">
             {tr('transactions.shown', { filtered: filtered.length, total: transactions.length })}
             {draftsOnly && ` ${tr('transactions.draftsOnly')}`}

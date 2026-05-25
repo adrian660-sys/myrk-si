@@ -43,7 +43,7 @@ export default function Invoices() {
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4">
       <header className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-semibold">{t('invoices.title')}</h1>
+          <h1 className="font-display text-3xl">{t('invoices.title')}</h1>
           <p className="text-sm text-muted">{t('invoices.subtitle')}</p>
         </div>
         {isAdmin && (
@@ -58,22 +58,22 @@ export default function Invoices() {
         )}
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="card-pad">
-          <div className="text-xs uppercase tracking-wide text-muted">{t('invoices.outstanding')}</div>
-          <div className="mt-1 text-xl font-semibold tabular-nums text-expense">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="card p-5">
+          <div className="text-xs font-medium text-muted">{t('invoices.outstanding')}</div>
+          <div className="mt-1 font-display text-3xl tabular-nums tracking-tight text-expense">
             {formatEur(totals.outstanding)}
           </div>
         </div>
-        <div className="card-pad">
-          <div className="text-xs uppercase tracking-wide text-muted">{t('invoices.paidTotal')}</div>
-          <div className="mt-1 text-xl font-semibold tabular-nums text-income">
+        <div className="card p-5">
+          <div className="text-xs font-medium text-muted">{t('invoices.paidTotal')}</div>
+          <div className="mt-1 font-display text-3xl tabular-nums tracking-tight text-income">
             {formatEur(totals.paid)}
           </div>
         </div>
-        <div className="card-pad">
-          <div className="text-xs uppercase tracking-wide text-muted">{t('invoices.draftTotal')}</div>
-          <div className="mt-1 text-xl font-semibold tabular-nums">
+        <div className="card p-5">
+          <div className="text-xs font-medium text-muted">{t('invoices.draftTotal')}</div>
+          <div className="mt-1 font-display text-3xl tabular-nums tracking-tight text-ink">
             {formatEur(totals.draft)}
           </div>
         </div>

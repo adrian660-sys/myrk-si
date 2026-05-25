@@ -53,7 +53,7 @@ export default function Projects() {
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-4">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">{t('projects.title')}</h1>
+          <h1 className="font-display text-3xl">{t('projects.title')}</h1>
           <p className="text-sm text-muted">
             {t('projects.subtitle')}
             {' '}{t('projects.totalReceived')}: <span className="text-income font-medium">{formatEur(grandTotal)}</span>

@@ -175,7 +175,7 @@ export default function Import() {
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-4">
       <header>
-        <h1 className="text-2xl font-semibold">Import</h1>
+        <h1 className="font-display text-3xl">Import</h1>
         <p className="text-sm text-muted">
           Upload a DH PDF, Revolut PDF, or a CSV migration file. Files are stored on Supabase
           Storage and mirrored to Google Drive for the accountant.

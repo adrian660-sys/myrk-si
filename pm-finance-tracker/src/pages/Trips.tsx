@@ -33,7 +33,7 @@ export default function Trips() {
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-4">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{t('trips.title')}</h1>
+          <h1 className="font-display text-3xl">{t('trips.title')}</h1>
           <p className="text-sm text-muted">{t('trips.subtitle')}</p>
         </div>
         {isAdmin && (

@@ -56,7 +56,7 @@ export default function InvoiceDetail() {
         <Link to="/invoices" className="text-sm text-muted hover:text-ink">
           ← {t('invoices.title')}
         </Link>
-        <h1 className="text-2xl font-semibold mt-2 mb-4">
+        <h1 className="font-display text-3xl mt-2 mb-4">
           {isNew
             ? newType === 'proforma' ? t('invoices.newProforma') : t('invoices.newInvoice')
             : t('invoices.editInvoice')}

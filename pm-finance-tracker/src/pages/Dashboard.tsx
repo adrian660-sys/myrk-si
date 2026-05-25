@@ -111,17 +111,15 @@ export default function Dashboard() {
   if (error) return <div className="p-6 text-expense">Error: {error}</div>;
 
   return (
-    <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto">
+    <div className="p-6 md:p-8 space-y-8 max-w-6xl mx-auto">
       <header>
-        <h1 className="text-2xl font-semibold">{t('dashboard.title')}</h1>
-        <p className="text-sm text-muted">{t('dashboard.subtitle')}</p>
+        <h1 className="font-display text-3xl text-ink">{t('dashboard.title')}</h1>
+        <p className="text-sm text-muted mt-1">{t('dashboard.subtitle')}</p>
       </header>
 
       <section className="space-y-3">
-        <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
-          {t('dashboard.currentBalance')}
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <h2 className="section-heading">{t('dashboard.currentBalance')}</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <KpiCard label="Cash" value={balanceBySource.cash}
             tone={balanceBySource.cash >= 0 ? 'neutral' : 'expense'}
             hint={t('dashboard.cashHint')} />
@@ -138,10 +136,8 @@ export default function Dashboard() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-xs font-medium uppercase tracking-wide text-muted">
-          {t('dashboard.totalSum')}
-        </h2>
-        <div className="grid grid-cols-2 gap-3 md:gap-4">
+        <h2 className="section-heading">{t('dashboard.totalSum')}</h2>
+        <div className="grid grid-cols-2 gap-4">
           <KpiCard label={t('dashboard.income')} value={totals.income} tone="neutral"
             hint={t('dashboard.incomeHint')} />
           <KpiCard label="Cash" value={totals.freshCash} tone="neutral"

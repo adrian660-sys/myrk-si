@@ -13,7 +13,7 @@ export default function Settings() {
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-4">
       <header>
-        <h1 className="text-2xl font-semibold">{t('settings.title')}</h1>
+        <h1 className="font-display text-3xl">{t('settings.title')}</h1>
         <p className="text-sm text-muted">{t('settings.subtitle')}</p>
       </header>
 

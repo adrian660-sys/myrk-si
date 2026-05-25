@@ -24,7 +24,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-sm card-pad">
         <div className="flex items-center justify-between mb-1">
-          <h1 className="text-xl font-semibold">{t('nav.appName')}</h1>
+          <h1 className="font-display text-2xl">{t('nav.appName')}</h1>
           <div className="flex gap-1">
             {(['en', 'fr'] as const).map((lang) => (
               <button

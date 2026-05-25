@@ -23,7 +23,7 @@ export default function Clients() {
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-4">
       <header className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">{t('clients.title')}</h1>
+          <h1 className="font-display text-3xl">{t('clients.title')}</h1>
           <p className="text-sm text-muted">{t('clients.subtitle')}</p>
         </div>
         {isAdmin && (

@@ -38,7 +38,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           >
             ☰ Menu
           </button>
-          <span className="font-semibold">PM Finance</span>
+          <span className="font-display text-lg">PM Finance</span>
           <AmountVisibilityToggle className="!text-ink !bg-canvas border border-line" />
         </header>
         <main className="flex-1 overflow-y-auto print:overflow-visible">{children}</main>
