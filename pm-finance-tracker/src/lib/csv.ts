@@ -5,13 +5,18 @@
 
 import type { PlannedTransaction, Transaction, Trip } from './types';
 
-/** Escape a single CSV cell — quote anything containing commas, quotes, or newlines. */
+/**
+ * Escape a single CSV cell. Quotes anything containing commas / quotes /
+ * newlines, AND prefixes a leading =, +, -, @, tab or CR with a single quote
+ * so spreadsheets cannot interpret the cell as a formula on re-open.
+ */
 function escapeCell(value: unknown): string {
   if (value === null || value === undefined) return '';
   const s = String(value);
   if (s === '') return '';
-  if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
-  return s;
+  const safe = /^[=+\-@\t\r]/.test(s) ? "'" + s : s;
+  if (/[",\n\r]/.test(safe)) return `"${safe.replace(/"/g, '""')}"`;
+  return safe;
 }
 
 function toCsv(headers: string[], rows: (unknown[])[]): string {

@@ -229,7 +229,7 @@
     "remoteWork": "Remote work",
     "ratesInConstants": "Per Diem / Remote Work daily rates are still in src/lib/constants.ts.",
     "users": "Users",
-    "usersHint": "Manage users in the Supabase dashboard. Admin email is set via VITE_ADMIN_EMAIL and enforced by public.is_admin() in RLS."
+    "usersHint": "Manage users in the Supabase dashboard. The admin role is stored in auth.users.app_metadata ({\"role\":\"admin\"}) and enforced server-side by public.is_admin() in RLS."
   },
   "personal": {
     "dashboardTitle": "Personal dashboard",

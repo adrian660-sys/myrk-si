@@ -10,6 +10,11 @@ if (!url || !anonKey) {
   );
 }
 
-export const supabase = createClient(url, anonKey);
-
-export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL ?? 'adrian@myrk.si';
+export const supabase = createClient(url, anonKey, {
+  auth: {
+    flowType: 'pkce',
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+});

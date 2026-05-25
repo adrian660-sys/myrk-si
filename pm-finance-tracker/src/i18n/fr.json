@@ -229,7 +229,7 @@
     "remoteWork": "Télétravail",
     "ratesInConstants": "Les taux Per Diem / télétravail restent dans src/lib/constants.ts.",
     "users": "Utilisateurs",
-    "usersHint": "Gérez les utilisateurs dans Supabase. L'e-mail admin est défini via VITE_ADMIN_EMAIL."
+    "usersHint": "Gérez les utilisateurs dans Supabase. Le rôle admin est stocké dans auth.users.app_metadata ({\"role\":\"admin\"}) et appliqué côté serveur par public.is_admin() dans RLS."
   },
   "personal": {
     "dashboardTitle": "Tableau de bord personnel",

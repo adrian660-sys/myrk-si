@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase, ADMIN_EMAIL } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { Role } from '../lib/types';
 
 interface AuthValue {
@@ -30,7 +30,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const email = session?.user?.email ?? null;
-  const role: Role | null = !email ? null : email === ADMIN_EMAIL ? 'admin' : 'guest';
+  const role: Role | null = !session
+    ? null
+    : session.user.app_metadata?.role === 'admin'
+      ? 'admin'
+      : 'guest';
 
   const signIn: AuthValue['signIn'] = async (em, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email: em, password });
