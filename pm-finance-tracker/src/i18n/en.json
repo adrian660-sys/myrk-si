@@ -213,6 +213,18 @@
     "linkDismiss": "Skip",
     "linkedTo": "Linked to"
   },
+  "markPaid": {
+    "title": "Mark as paid",
+    "justMarkPaid": "Just mark paid",
+    "justMarkPaidHint": "No transaction recorded — only marks occurrence as paid.",
+    "logTransaction": "Log transaction",
+    "logTransactionHint": "Record the actual payment with full details.",
+    "receiptOptional": "Receipt (optional)",
+    "parsing": "Parsing receipt…",
+    "dropHint": "Drop receipt here, or click to browse",
+    "parsedReceipt": "Receipt parsed",
+    "unsupportedFile": "Unsupported file type. Use JPG, PNG, WebP, or PDF."
+  },
   "import": {
     "title": "Import",
     "subtitle": "Upload a DH PDF, Revolut PDF, or a CSV migration file.",

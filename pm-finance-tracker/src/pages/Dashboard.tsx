@@ -2,22 +2,24 @@ import { Fragment, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import KpiCard from '../components/KpiCard';
+import MarkPaidModal from '../components/MarkPaidModal';
 import { useFinanceData } from '../hooks/useFinanceData';
-import { supabase } from '../lib/supabase';
 import { useIsAdmin } from '../hooks/useAuth';
 import { computeTripBalances, cashWalletBalance } from '../lib/tripBalance';
 import { formatEur, formatSigned, formatDate, monthLabel } from '../lib/format';
 import {
   projectMonths, upcomingOccurrences, isOccurrencePaid, todayIsoLocal, daysBetween,
 } from '../lib/planned';
-import { notifyPaymentsChanged } from '../hooks/useFinanceData';
+import type { PlannedOccurrence } from '../lib/types';
 
 export default function Dashboard() {
   const { t } = useTranslation();
   const isAdmin = useIsAdmin();
   const {
-    trips, transactions, cashReceived, projectReceipts, planned, plannedPayments, reload, loading, error,
+    trips, transactions, cashReceived, projectReceipts, planned, plannedPayments,
+    categories, subcategories, reload, loading, error,
   } = useFinanceData();
+  const [markPaidOccurrence, setMarkPaidOccurrence] = useState<PlannedOccurrence | null>(null);
 
   const balances = useMemo(
     () => computeTripBalances(trips, transactions, cashReceived),
@@ -95,18 +97,6 @@ export default function Dashboard() {
     [allUpcoming, plannedPayments]
   );
   const overdueCount = upcoming.filter((o) => o.due_date < today).length;
-
-  async function markPaid(plannedId: string, dueDate: string) {
-    const { error: err } = await supabase.from('planned_payments').insert({
-      planned_id: plannedId,
-      due_date: dueDate,
-      paid_on: today,
-      transaction_id: null,
-    });
-    if (err) { alert(err.message); return; }
-    notifyPaymentsChanged();
-    reload();
-  }
 
   const projection = useMemo(() => projectMonths(planned, 12), [planned]);
   const projectionWithRunning = useMemo(() => {
@@ -246,7 +236,7 @@ export default function Dashboard() {
                           {overdue && (
                             <button
                               className="btn-secondary text-xs"
-                              onClick={() => markPaid(o.planned_id, o.due_date)}
+                              onClick={() => setMarkPaidOccurrence(o)}
                             >
                               {t('planned.markPaid')}
                             </button>
@@ -305,6 +295,17 @@ export default function Dashboard() {
           </div>
         </Collapsible>
       )}
+
+      <MarkPaidModal
+        occurrence={markPaidOccurrence}
+        trips={trips}
+        categories={categories}
+        subcategories={subcategories}
+        planned={planned}
+        plannedPayments={plannedPayments}
+        onDone={() => { setMarkPaidOccurrence(null); reload(); }}
+        onClose={() => setMarkPaidOccurrence(null)}
+      />
 
       <Collapsible
         title={t('dashboard.cashBalanceByTrip')}

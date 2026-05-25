@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal';
+import MarkPaidModal from '../components/MarkPaidModal';
 import { useFinanceData } from '../hooks/useFinanceData';
-import { notifyPaymentsChanged } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { FUNDING_SOURCES } from '../lib/constants';
@@ -10,7 +10,7 @@ import { formatDate, formatSigned, todayIso } from '../lib/format';
 import { downloadPlannedCsv } from '../lib/csv';
 import { expandOccurrences, isOccurrencePaid, todayIsoLocal, addDays } from '../lib/planned';
 import type {
-  Category, FundingSource, PlannedFrequency, PlannedTransaction,
+  Category, FundingSource, PlannedFrequency, PlannedOccurrence, PlannedTransaction,
 } from '../lib/types';
 
 const FREQUENCY_VALUES: PlannedFrequency[] = ['once', 'monthly', 'quarterly', 'yearly'];
@@ -21,6 +21,7 @@ export default function Planned() {
   const isAdmin = useIsAdmin();
 
   const [editing, setEditing] = useState<PlannedTransaction | null | 'new'>(null);
+  const [markPaidOccurrence, setMarkPaidOccurrence] = useState<PlannedOccurrence | null>(null);
 
   const today = todayIsoLocal();
 
@@ -39,18 +40,6 @@ export default function Planned() {
       return { p, next };
     });
   }, [planned, today]);
-
-  async function markPaid(plannedId: string, dueDate: string) {
-    const { error } = await supabase.from('planned_payments').insert({
-      planned_id: plannedId,
-      due_date: dueDate,
-      paid_on: today,
-      transaction_id: null,
-    });
-    if (error) { alert(error.message); return; }
-    notifyPaymentsChanged();
-    reload();
-  }
 
   async function deletePlanned(id: string) {
     if (!confirm('Delete this scheduled item?')) return;
@@ -118,7 +107,7 @@ export default function Planned() {
                       <td className="py-2 text-right">
                         <button
                           className="btn-secondary text-xs"
-                          onClick={() => markPaid(o.planned_id, o.due_date)}
+                          onClick={() => setMarkPaidOccurrence(o)}
                         >
                           {t('planned.markPaid')}
                         </button>
@@ -194,6 +183,17 @@ export default function Planned() {
           </tbody>
         </table>
       </div>
+
+      <MarkPaidModal
+        occurrence={markPaidOccurrence}
+        trips={[]}
+        categories={categories}
+        subcategories={subcategories}
+        planned={planned}
+        plannedPayments={plannedPayments}
+        onDone={() => { setMarkPaidOccurrence(null); reload(); }}
+        onClose={() => setMarkPaidOccurrence(null)}
+      />
 
       <Modal
         open={!!editing}

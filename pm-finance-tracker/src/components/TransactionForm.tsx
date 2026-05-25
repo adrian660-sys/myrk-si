@@ -15,12 +15,25 @@ import { formatEur, formatPlainAmount, formatDate, todayIso } from '../lib/forma
 import { findMatchingPlanned } from '../lib/planned';
 import { notifyPaymentsChanged } from '../hooks/useFinanceData';
 
+interface PreFill {
+  description?: string;
+  amountStr?: string;
+  direction?: 'in' | 'out';
+  category?: Category;
+  subcategory?: string;
+  fundingSource?: FundingSource;
+  date?: string;
+  receiptPath?: string;
+}
+
 interface Props {
   trips: Trip[];
   categories: Category[];
   subcategories: Record<string, string[]>;
   planned?: PlannedTransaction[];
   plannedPayments?: PlannedPayment[];
+  preFill?: PreFill;
+  preLinkedOccurrence?: { planned_id: string; due_date: string; description: string };
   initial?: Transaction | null;
   onSaved: () => void;
   onCancel?: () => void;
@@ -32,6 +45,8 @@ export default function TransactionForm({
   subcategories: SUBCATEGORIES,
   planned,
   plannedPayments,
+  preFill,
+  preLinkedOccurrence,
   initial,
   onSaved,
   onCancel,
@@ -39,17 +54,21 @@ export default function TransactionForm({
   const { t } = useTranslation();
   const editing = !!initial;
 
-  const [date, setDate] = useState<string>(initial?.date ?? todayIso());
-  const [description, setDescription] = useState(initial?.description ?? '');
+  const [date, setDate] = useState<string>(initial?.date ?? preFill?.date ?? todayIso());
+  const [description, setDescription] = useState(initial?.description ?? preFill?.description ?? '');
   const [fundingSource, setFundingSource] =
-    useState<FundingSource>(initial?.funding_source ?? 'Cash');
+    useState<FundingSource>(initial?.funding_source ?? preFill?.fundingSource ?? 'Cash');
   const [category, setCategory] = useState<Category>(
-    initial?.category ?? categories[0] ?? 'Travel'
+    initial?.category ?? preFill?.category ?? categories[0] ?? 'Travel'
   );
-  const [subcategory, setSubcategory] = useState<string>(initial?.subcategory ?? '');
-  const [amount, setAmount] = useState<string>(initial ? String(initial.amount) : '');
+  const [subcategory, setSubcategory] = useState<string>(
+    initial?.subcategory ?? preFill?.subcategory ?? ''
+  );
+  const [amount, setAmount] = useState<string>(
+    initial ? String(Math.abs(initial.amount)) : preFill?.amountStr ?? ''
+  );
   const [direction, setDirection] = useState<'in' | 'out'>(
-    (initial?.amount ?? -1) >= 0 ? 'in' : 'out'
+    initial ? ((initial.amount ?? -1) >= 0 ? 'in' : 'out') : preFill?.direction ?? 'out'
   );
   const [days, setDays] = useState<string>('');
   const [billStatus, setBillStatus] = useState<BillStatus>(initial?.bill_status ?? '/');
@@ -59,8 +78,8 @@ export default function TransactionForm({
   const [error, setError] = useState<string | null>(null);
   const [linkedOccurrence, setLinkedOccurrence] = useState<{
     planned_id: string; due_date: string; description: string;
-  } | null>(null);
-  const [matchDismissed, setMatchDismissed] = useState(false);
+  } | null>(preLinkedOccurrence ?? null);
+  const [matchDismissed, setMatchDismissed] = useState(!!preLinkedOccurrence);
 
   const subs = SUBCATEGORIES[category] ?? [];
   const isFixedRate = subcategory === 'Per Diem' || subcategory === 'Remote Work';
@@ -118,6 +137,7 @@ export default function TransactionForm({
       bill_status: billStatus,
       trip_id: tripId || null,
       import_source: 'manual' as const,
+      receipt_path: preFill?.receiptPath ?? null,
     };
 
     const { data, error: err } = editing

@@ -213,6 +213,18 @@
     "linkDismiss": "Ignorer",
     "linkedTo": "Lié à"
   },
+  "markPaid": {
+    "title": "Marquer comme payé",
+    "justMarkPaid": "Marquer payé",
+    "justMarkPaidHint": "Aucune transaction enregistrée — marque simplement l'occurrence comme payée.",
+    "logTransaction": "Enregistrer le paiement",
+    "logTransactionHint": "Saisir le paiement réel avec tous les détails.",
+    "receiptOptional": "Justificatif (optionnel)",
+    "parsing": "Analyse du justificatif…",
+    "dropHint": "Déposez le justificatif ici ou cliquez pour parcourir",
+    "parsedReceipt": "Justificatif analysé",
+    "unsupportedFile": "Type de fichier non supporté. Utilisez JPG, PNG, WebP ou PDF."
+  },
   "import": {
     "title": "Import",
     "subtitle": "Téléchargez un PDF DH, Revolut ou un fichier CSV de migration.",
