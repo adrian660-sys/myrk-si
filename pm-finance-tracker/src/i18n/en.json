@@ -220,9 +220,9 @@
     "logTransaction": "Log transaction",
     "logTransactionHint": "Record the actual payment with full details.",
     "receiptOptional": "Receipt (optional)",
-    "parsing": "Parsing receipt…",
+    "uploading": "Uploading receipt…",
     "dropHint": "Drop receipt here, or click to browse",
-    "parsedReceipt": "Receipt parsed",
+    "receiptAttached": "Receipt attached",
     "unsupportedFile": "Unsupported file type. Use JPG, PNG, WebP, or PDF."
   },
   "import": {

@@ -9,13 +9,6 @@ import type {
   Category, PlannedOccurrence, PlannedPayment, PlannedTransaction, Trip,
 } from '../lib/types';
 
-interface ParsedReceipt {
-  amount: number | null;
-  date: string | null;
-  description: string | null;
-  storagePath: string;
-}
-
 interface Props {
   occurrence: PlannedOccurrence | null;
   trips: Trip[];
@@ -137,45 +130,36 @@ function FormStep({
 }) {
   const { t } = useTranslation();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [parsing, setParsing] = useState(false);
-  const [parseError, setParseError] = useState<string | null>(null);
-  const [parsed, setParsed] = useState<ParsedReceipt | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [receiptPath, setReceiptPath] = useState<string | null>(null);
+  const [receiptName, setReceiptName] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
   async function handleFile(file: File) {
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
     if (!allowed.includes(file.type)) {
-      setParseError(t('markPaid.unsupportedFile'));
+      setUploadError(t('markPaid.unsupportedFile'));
       return;
     }
 
-    setParsing(true);
-    setParseError(null);
-    setParsed(null);
+    setUploading(true);
+    setUploadError(null);
+    setReceiptPath(null);
 
     try {
-      // Upload to receipts bucket
       const ext = file.name.split('.').pop() ?? 'bin';
       const storagePath = `${occurrence.planned_id}/${occurrence.due_date}/${Date.now()}.${ext}`;
       const { error: uploadErr } = await supabase.storage
         .from('receipts').upload(storagePath, file, { upsert: true });
       if (uploadErr) throw new Error(uploadErr.message);
 
-      // Convert to base64 for edge function
-      const arrayBuffer = await file.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-
-      // Call parse-receipt edge function
-      const { data, error: fnErr } = await supabase.functions.invoke('parse-receipt', {
-        body: { fileBase64: base64, mediaType: file.type, storagePath },
-      });
-      if (fnErr) throw new Error(fnErr.message);
-
-      setParsed({ ...data, storagePath });
+      setReceiptPath(storagePath);
+      setReceiptName(file.name);
     } catch (e) {
-      setParseError((e as Error).message);
+      setUploadError((e as Error).message);
     } finally {
-      setParsing(false);
+      setUploading(false);
     }
   }
 
@@ -186,18 +170,15 @@ function FormStep({
     if (file) handleFile(file);
   }
 
-  // Pre-fill values: planned item as base, receipt overrides if available
   const preFill = {
-    description: parsed?.description ?? occurrence.description,
-    amountStr: parsed?.amount != null
-      ? String(Math.abs(parsed.amount))
-      : String(Math.abs(occurrence.amount)),
+    description: occurrence.description,
+    amountStr: String(Math.abs(occurrence.amount)),
     direction: 'out' as const,
     category: occurrence.category,
     subcategory: occurrence.subcategory ?? undefined,
     fundingSource: occurrence.funding_source,
-    date: parsed?.date ?? todayIso(),
-    receiptPath: parsed?.storagePath,
+    date: todayIso(),
+    receiptPath: receiptPath ?? undefined,
   };
 
   const preLinked = {
@@ -208,13 +189,12 @@ function FormStep({
 
   return (
     <div className="space-y-4">
-      {/* Receipt upload */}
       <div>
         <div className="text-xs font-medium uppercase tracking-wide text-muted mb-2">
           {t('markPaid.receiptOptional')}
         </div>
 
-        {!parsed && (
+        {!receiptPath && (
           <div
             className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
               dragOver ? 'border-blue-400 bg-blue-50' : 'border-line hover:border-blue-300'
@@ -224,8 +204,8 @@ function FormStep({
             onDragLeave={() => setDragOver(false)}
             onDrop={onDrop}
           >
-            {parsing ? (
-              <div className="text-sm text-muted">{t('markPaid.parsing')}</div>
+            {uploading ? (
+              <div className="text-sm text-muted">{t('markPaid.uploading')}</div>
             ) : (
               <>
                 <div className="text-2xl mb-1">📎</div>
@@ -244,23 +224,25 @@ function FormStep({
           onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
         />
 
-        {parsed && (
+        {receiptPath && (
           <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 flex items-center justify-between gap-3 text-sm">
             <span className="text-emerald-800">
-              ✓ {t('markPaid.parsedReceipt')}
-              {parsed.description && <span className="font-medium"> · {parsed.description}</span>}
-              {parsed.amount && <span> · −€{parsed.amount.toFixed(2)}</span>}
-              {parsed.date && <span> · {formatDate(parsed.date)}</span>}
+              ✓ {t('markPaid.receiptAttached')}
+              {receiptName && <span className="font-medium"> · {receiptName}</span>}
             </span>
             <button type="button" className="text-xs text-emerald-600 hover:text-emerald-800"
-              onClick={() => { setParsed(null); if (fileRef.current) fileRef.current.value = ''; }}>
+              onClick={() => {
+                setReceiptPath(null);
+                setReceiptName(null);
+                if (fileRef.current) fileRef.current.value = '';
+              }}>
               {t('common.cancel')}
             </button>
           </div>
         )}
 
-        {parseError && (
-          <div className="text-sm text-expense mt-1">{parseError}</div>
+        {uploadError && (
+          <div className="text-sm text-expense mt-1">{uploadError}</div>
         )}
       </div>
 
