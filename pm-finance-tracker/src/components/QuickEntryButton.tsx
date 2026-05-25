@@ -8,7 +8,7 @@ import TransactionForm from './TransactionForm';
 
 export default function QuickEntryButton() {
   const isAdmin = useIsAdmin();
-  const { categories, subcategories } = useFinanceData();
+  const { categories, subcategories, planned, plannedPayments } = useFinanceData();
   const [open, setOpen] = useState(false);
   const [trips, setTrips] = useState<Trip[]>([]);
 
@@ -37,6 +37,8 @@ export default function QuickEntryButton() {
           trips={trips}
           categories={categories}
           subcategories={subcategories}
+          planned={planned}
+          plannedPayments={plannedPayments}
           onSaved={() => {
             setOpen(false);
             window.dispatchEvent(new CustomEvent('pmf:transactions-changed'));
