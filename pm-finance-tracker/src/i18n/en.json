@@ -188,7 +188,12 @@
     "descriptionRequired": "Description is required.",
     "saveChanges": "Save changes",
     "create": "Create",
-    "deleteItem": "Delete this scheduled item?"
+    "deleteItem": "Delete this scheduled item?",
+    "overdueSection": "Overdue — needs attention",
+    "overdueHint": "These scheduled payments are past due and not yet logged.",
+    "overdueCount_one": "{{count}} item",
+    "overdueCount_other": "{{count}} items",
+    "markPaid": "✓ Mark paid"
   },
   "transactionForm": {
     "fundingSource": "Funding source",
@@ -202,7 +207,11 @@
     "enterNonZeroAmount": "Enter a non-zero amount.",
     "saveChanges": "Save changes",
     "addTransaction": "Add transaction",
-    "descriptionPlaceholder": "e.g. Hotel Zurich 4 nights"
+    "descriptionPlaceholder": "e.g. Hotel Zurich 4 nights",
+    "matchedScheduled": "Matches scheduled item",
+    "linkConfirm": "Link it",
+    "linkDismiss": "Skip",
+    "linkedTo": "Linked to"
   },
   "import": {
     "title": "Import",

@@ -3,16 +3,20 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import KpiCard from '../components/KpiCard';
 import { useFinanceData } from '../hooks/useFinanceData';
+import { supabase } from '../lib/supabase';
+import { useIsAdmin } from '../hooks/useAuth';
 import { computeTripBalances, cashWalletBalance } from '../lib/tripBalance';
 import { formatEur, formatSigned, formatDate, monthLabel } from '../lib/format';
 import {
-  projectMonths, upcomingOccurrences, todayIsoLocal, daysBetween,
+  projectMonths, upcomingOccurrences, isOccurrencePaid, todayIsoLocal, daysBetween,
 } from '../lib/planned';
+import { notifyPaymentsChanged } from '../hooks/useFinanceData';
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const isAdmin = useIsAdmin();
   const {
-    trips, transactions, cashReceived, projectReceipts, planned, loading, error,
+    trips, transactions, cashReceived, projectReceipts, planned, plannedPayments, reload, loading, error,
   } = useFinanceData();
 
   const balances = useMemo(
@@ -81,12 +85,28 @@ export default function Dashboard() {
     [transactions]
   );
 
-  const upcoming = useMemo(
-    () => upcomingOccurrences(planned, { ahead: 30, pastDays: 7 }),
+  const allUpcoming = useMemo(
+    () => upcomingOccurrences(planned, { ahead: 30, pastDays: 14 }),
     [planned]
   );
   const today = todayIsoLocal();
+  const upcoming = useMemo(
+    () => allUpcoming.filter((o) => !isOccurrencePaid(plannedPayments, o.planned_id, o.due_date)),
+    [allUpcoming, plannedPayments]
+  );
   const overdueCount = upcoming.filter((o) => o.due_date < today).length;
+
+  async function markPaid(plannedId: string, dueDate: string) {
+    const { error: err } = await supabase.from('planned_payments').insert({
+      planned_id: plannedId,
+      due_date: dueDate,
+      paid_on: today,
+      transaction_id: null,
+    });
+    if (err) { alert(err.message); return; }
+    notifyPaymentsChanged();
+    reload();
+  }
 
   const projection = useMemo(() => projectMonths(planned, 12), [planned]);
   const projectionWithRunning = useMemo(() => {
@@ -191,6 +211,7 @@ export default function Dashboard() {
                   <th className="px-5 py-2 font-medium">{t('common.source')}</th>
                   <th className="px-5 py-2 font-medium">{t('common.category')}</th>
                   <th className="px-5 py-2 font-medium text-right">{t('common.amount')}</th>
+                  {isAdmin && <th className="px-5 py-2" />}
                 </tr>
               </thead>
               <tbody>
@@ -220,6 +241,18 @@ export default function Dashboard() {
                       <td className={`px-5 py-2 text-right tabular-nums ${o.amount >= 0 ? 'text-income' : 'text-expense'}`}>
                         {formatSigned(o.amount)}
                       </td>
+                      {isAdmin && (
+                        <td className="px-5 py-2 text-right">
+                          {overdue && (
+                            <button
+                              className="btn-secondary text-xs"
+                              onClick={() => markPaid(o.planned_id, o.due_date)}
+                            >
+                              {t('planned.markPaid')}
+                            </button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

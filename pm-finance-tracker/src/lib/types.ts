@@ -116,6 +116,15 @@ export interface PlannedOccurrence {
   due_date: string; // YYYY-MM-DD
 }
 
+export interface PlannedPayment {
+  id: string;
+  planned_id: string;
+  due_date: string;
+  paid_on: string;
+  transaction_id: string | null;
+  created_at: string;
+}
+
 /** A transaction shape used on the import review screen before it is saved. */
 export interface ParsedTransaction {
   date: string | null;

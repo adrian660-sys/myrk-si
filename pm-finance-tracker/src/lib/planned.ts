@@ -1,4 +1,4 @@
-import type { PlannedTransaction, PlannedOccurrence } from './types';
+import type { PlannedTransaction, PlannedOccurrence, PlannedPayment } from './types';
 
 /**
  * Expand a planned/recurring rule into concrete dated occurrences that fall
@@ -94,6 +94,47 @@ export function todayIsoLocal(): string {
     String(d.getMonth() + 1).padStart(2, '0'),
     String(d.getDate()).padStart(2, '0'),
   ].join('-');
+}
+
+// ---------------------------------------------------------------------------
+// Payments helpers
+// ---------------------------------------------------------------------------
+
+export function isOccurrencePaid(
+  payments: PlannedPayment[],
+  plannedId: string,
+  dueDate: string,
+): boolean {
+  return payments.some((p) => p.planned_id === plannedId && p.due_date === dueDate);
+}
+
+/**
+ * Given a transaction being entered, find the first unpaid planned occurrence
+ * that looks like a match: same category + funding source, amount within 15%,
+ * and transaction date within ±10 days of the due date.
+ */
+export function findMatchingPlanned(
+  tx: { amountAbs: number; category: string; fundingSource: string; date: string },
+  rules: PlannedTransaction[],
+  payments: PlannedPayment[],
+): { planned_id: string; due_date: string; description: string } | null {
+  if (!tx.date || tx.amountAbs <= 0) return null;
+  const from = addDays(tx.date, -10);
+  const to = addDays(tx.date, 10);
+  for (const rule of rules) {
+    if (!rule.active || rule.amount >= 0) continue;
+    if (rule.category !== tx.category) continue;
+    if (rule.funding_source !== tx.fundingSource) continue;
+    const tolerance = Math.abs(rule.amount) * 0.15;
+    if (Math.abs(tx.amountAbs - Math.abs(rule.amount)) > tolerance) continue;
+    const occs = expandOccurrences(rule, from, to);
+    for (const occ of occs) {
+      if (!isOccurrencePaid(payments, rule.id, occ.due_date)) {
+        return { planned_id: rule.id, due_date: occ.due_date, description: rule.description };
+      }
+    }
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------

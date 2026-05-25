@@ -2,13 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildCategoryLists, type PmCategoryRow, type PmSubcategoryRow } from '../lib/categoryCatalog';
 import { supabase } from '../lib/supabase';
 import type {
-  CashReceived, Category, PlannedTransaction, Project, ProjectReceipt, Transaction, Trip,
+  CashReceived, Category, PlannedPayment, PlannedTransaction, Project, ProjectReceipt, Transaction, Trip,
 } from '../lib/types';
 
 export const PM_CATALOG_CHANGED = 'pmf:catalog-changed';
+export const PM_PAYMENTS_CHANGED = 'pmf:payments-changed';
 
 export function notifyCatalogChanged() {
   window.dispatchEvent(new Event(PM_CATALOG_CHANGED));
+}
+
+export function notifyPaymentsChanged() {
+  window.dispatchEvent(new Event(PM_PAYMENTS_CHANGED));
 }
 
 export interface FinanceData {
@@ -18,6 +23,7 @@ export interface FinanceData {
   projects: Project[];
   projectReceipts: ProjectReceipt[];
   planned: PlannedTransaction[];
+  plannedPayments: PlannedPayment[];
   pmCategories: PmCategoryRow[];
   pmSubcategories: PmSubcategoryRow[];
   categories: Category[];
@@ -39,6 +45,7 @@ export function useFinanceData(): FinanceData {
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectReceipts, setProjectReceipts] = useState<ProjectReceipt[]>([]);
   const [planned, setPlanned] = useState<PlannedTransaction[]>([]);
+  const [plannedPayments, setPlannedPayments] = useState<PlannedPayment[]>([]);
   const [pmCategories, setPmCategories] = useState<PmCategoryRow[]>([]);
   const [pmSubcategories, setPmSubcategories] = useState<PmSubcategoryRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,17 +58,18 @@ export function useFinanceData(): FinanceData {
 
   const reload = useCallback(async () => {
     setError(null);
-    const [t, tx, cr, pr, prr, pl, cat, sub] = await Promise.all([
+    const [t, tx, cr, pr, prr, pl, pp, cat, sub] = await Promise.all([
       supabase.from('trips').select('*').order('end_date', { ascending: true }),
       supabase.from('transactions').select('*').order('date', { ascending: false, nullsFirst: false }),
       supabase.from('cash_received').select('*').order('date', { ascending: true }),
       supabase.from('projects').select('*').order('start_date', { ascending: false }),
       supabase.from('project_receipts').select('*').order('date', { ascending: false }),
       supabase.from('planned_transactions').select('*').order('start_date', { ascending: true }),
+      supabase.from('planned_payments').select('*'),
       supabase.from('pm_categories').select('*').order('sort_order').order('name'),
       supabase.from('pm_subcategories').select('*').order('name'),
     ]);
-    const optionalTables = /planned_transactions|projects|project_receipts|pm_categories|pm_subcategories/;
+    const optionalTables = /planned_transactions|planned_payments|projects|project_receipts|pm_categories|pm_subcategories/;
     const firstError = t.error ?? tx.error ?? cr.error
       ?? (pr.error && !optionalTables.test(pr.error.message) ? pr.error : null)
       ?? (prr.error && !optionalTables.test(prr.error.message) ? prr.error : null)
@@ -76,6 +84,7 @@ export function useFinanceData(): FinanceData {
     setProjects((pr.data as Project[]) ?? []);
     setProjectReceipts((prr.data as ProjectReceipt[]) ?? []);
     setPlanned((pl.data as PlannedTransaction[]) ?? []);
+    setPlannedPayments((pp.data as PlannedPayment[]) ?? []);
     setPmCategories((cat.data as PmCategoryRow[]) ?? []);
     setPmSubcategories((sub.data as PmSubcategoryRow[]) ?? []);
     setLoading(false);
@@ -87,15 +96,17 @@ export function useFinanceData(): FinanceData {
     window.addEventListener('pmf:transactions-changed', onChange);
     window.addEventListener('pmf:planned-changed', onChange);
     window.addEventListener(PM_CATALOG_CHANGED, onChange);
+    window.addEventListener(PM_PAYMENTS_CHANGED, onChange);
     return () => {
       window.removeEventListener('pmf:transactions-changed', onChange);
       window.removeEventListener('pmf:planned-changed', onChange);
       window.removeEventListener(PM_CATALOG_CHANGED, onChange);
+      window.removeEventListener(PM_PAYMENTS_CHANGED, onChange);
     };
   }, [reload]);
 
   return {
-    trips, transactions, cashReceived, projects, projectReceipts, planned,
+    trips, transactions, cashReceived, projects, projectReceipts, planned, plannedPayments,
     pmCategories, pmSubcategories, categories, subcategories,
     loading, error, reload,
   };

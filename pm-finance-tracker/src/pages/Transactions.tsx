@@ -15,7 +15,7 @@ const PAGE_SIZE = 50;
 
 export default function Transactions() {
   const { t: tr } = useTranslation();
-  const { transactions, trips, categories, subcategories, reload, loading } = useFinanceData();
+  const { transactions, trips, planned, plannedPayments, categories, subcategories, reload, loading } = useFinanceData();
   const isAdmin = useIsAdmin();
   const [params, setParams] = useSearchParams();
 
@@ -221,6 +221,8 @@ export default function Transactions() {
             trips={trips}
             categories={categories}
             subcategories={subcategories}
+            planned={planned}
+            plannedPayments={plannedPayments}
             onSaved={() => { setEditing(null); reload(); }}
             onCancel={() => setEditing(null)}
           />

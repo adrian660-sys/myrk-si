@@ -2,12 +2,13 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal';
 import { useFinanceData } from '../hooks/useFinanceData';
+import { notifyPaymentsChanged } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { FUNDING_SOURCES } from '../lib/constants';
 import { formatDate, formatSigned, todayIso } from '../lib/format';
 import { downloadPlannedCsv } from '../lib/csv';
-import { expandOccurrences, todayIsoLocal, addDays } from '../lib/planned';
+import { expandOccurrences, isOccurrencePaid, todayIsoLocal, addDays } from '../lib/planned';
 import type {
   Category, FundingSource, PlannedFrequency, PlannedTransaction,
 } from '../lib/types';
@@ -16,19 +17,40 @@ const FREQUENCY_VALUES: PlannedFrequency[] = ['once', 'monthly', 'quarterly', 'y
 
 export default function Planned() {
   const { t } = useTranslation();
-  const { planned, categories, subcategories, reload, loading } = useFinanceData();
+  const { planned, plannedPayments, categories, subcategories, reload, loading } = useFinanceData();
   const isAdmin = useIsAdmin();
 
   const [editing, setEditing] = useState<PlannedTransaction | null | 'new'>(null);
 
+  const today = todayIsoLocal();
+
+  const overdueOccurrences = useMemo(() => {
+    const from = addDays(today, -90);
+    return planned
+      .flatMap((p) => expandOccurrences(p, from, addDays(today, -1)))
+      .filter((o) => !isOccurrencePaid(plannedPayments, o.planned_id, o.due_date))
+      .sort((a, b) => a.due_date.localeCompare(b.due_date));
+  }, [planned, plannedPayments, today]);
+
   const rows = useMemo(() => {
-    const today = todayIsoLocal();
     const horizon = addDays(today, 365);
     return planned.map((p) => {
       const next = expandOccurrences(p, today, horizon)[0]?.due_date ?? null;
       return { p, next };
     });
-  }, [planned]);
+  }, [planned, today]);
+
+  async function markPaid(plannedId: string, dueDate: string) {
+    const { error } = await supabase.from('planned_payments').insert({
+      planned_id: plannedId,
+      due_date: dueDate,
+      paid_on: today,
+      transaction_id: null,
+    });
+    if (error) { alert(error.message); return; }
+    notifyPaymentsChanged();
+    reload();
+  }
 
   async function deletePlanned(id: string) {
     if (!confirm('Delete this scheduled item?')) return;
@@ -66,6 +88,49 @@ export default function Planned() {
           )}
         </div>
       </header>
+
+      {overdueOccurrences.length > 0 && (
+        <div className="card-pad border-l-4 border-expense space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-expense">{t('planned.overdueSection')}</div>
+              <div className="text-xs text-muted">{t('planned.overdueHint')}</div>
+            </div>
+            <span className="chip bg-red-100 text-red-800">
+              {t('planned.overdueCount', { count: overdueOccurrences.length })}
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <tbody>
+                {overdueOccurrences.map((o) => (
+                  <tr key={`${o.planned_id}-${o.due_date}`} className="border-t border-line first:border-0">
+                    <td className="py-2 pr-4 text-expense font-medium">{formatDate(o.due_date)}</td>
+                    <td className="py-2 pr-4">{o.description}</td>
+                    <td className="py-2 pr-4 text-muted">{o.category}</td>
+                    <td className="py-2 pr-4">
+                      <span className="chip bg-canvas border border-line">{o.funding_source}</span>
+                    </td>
+                    <td className="py-2 pr-4 text-right tabular-nums text-expense">
+                      {formatSigned(o.amount)}
+                    </td>
+                    {isAdmin && (
+                      <td className="py-2 text-right">
+                        <button
+                          className="btn-secondary text-xs"
+                          onClick={() => markPaid(o.planned_id, o.due_date)}
+                        >
+                          {t('planned.markPaid')}
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">

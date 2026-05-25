@@ -6,15 +6,21 @@ import type {
   BillStatus,
   Category,
   FundingSource,
+  PlannedPayment,
+  PlannedTransaction,
   Transaction,
   Trip,
 } from '../lib/types';
-import { formatEur, formatPlainAmount, todayIso } from '../lib/format';
+import { formatEur, formatPlainAmount, formatDate, todayIso } from '../lib/format';
+import { findMatchingPlanned } from '../lib/planned';
+import { notifyPaymentsChanged } from '../hooks/useFinanceData';
 
 interface Props {
   trips: Trip[];
   categories: Category[];
   subcategories: Record<string, string[]>;
+  planned?: PlannedTransaction[];
+  plannedPayments?: PlannedPayment[];
   initial?: Transaction | null;
   onSaved: () => void;
   onCancel?: () => void;
@@ -24,6 +30,8 @@ export default function TransactionForm({
   trips,
   categories,
   subcategories: SUBCATEGORIES,
+  planned,
+  plannedPayments,
   initial,
   onSaved,
   onCancel,
@@ -49,13 +57,16 @@ export default function TransactionForm({
   const [notes, setNotes] = useState<string>(initial?.notes ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [linkedOccurrence, setLinkedOccurrence] = useState<{
+    planned_id: string; due_date: string; description: string;
+  } | null>(null);
+  const [matchDismissed, setMatchDismissed] = useState(false);
 
-  const subs = SUBCATEGORIES[category];
+  const subs = SUBCATEGORIES[category] ?? [];
   const isFixedRate = subcategory === 'Per Diem' || subcategory === 'Remote Work';
   const rate = subcategory === 'Per Diem' ? PER_DIEM_RATE : REMOTE_WORK_RATE;
 
   useEffect(() => {
-    // Reset subcategory when category changes.
     if (subs.length && !subs.includes(subcategory)) setSubcategory(subs[0] ?? '');
     if (!subs.length) setSubcategory('');
   }, [category]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -74,11 +85,20 @@ export default function TransactionForm({
     return Math.abs(raw) * sign;
   }, [amount, direction, category]);
 
+  const autoMatch = useMemo(() => {
+    if (editing || !planned?.length || matchDismissed || linkedOccurrence) return null;
+    const amountAbs = parseFloat(amount);
+    if (!amountAbs || direction !== 'out' || category === 'Income' || category === 'Transfer') return null;
+    return findMatchingPlanned(
+      { amountAbs, category, fundingSource, date },
+      planned,
+      plannedPayments ?? [],
+    );
+  }, [amount, category, fundingSource, date, direction, planned, plannedPayments, matchDismissed, linkedOccurrence, editing]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    // Subcategory is mandatory for every category that has subcategories
-    // defined (Income / Business / Travel). Only Transfer is exempt.
     if (subs.length > 0 && !subcategory) {
       setError(t('transactionForm.subcategoryRequired')); return;
     }
@@ -100,12 +120,24 @@ export default function TransactionForm({
       import_source: 'manual' as const,
     };
 
-    const { error: err } = editing
-      ? await supabase.from('transactions').update(payload).eq('id', initial!.id)
-      : await supabase.from('transactions').insert(payload);
+    const { data, error: err } = editing
+      ? await supabase.from('transactions').update(payload).eq('id', initial!.id).select()
+      : await supabase.from('transactions').insert(payload).select();
+
+    if (err) { setSaving(false); setError(err.message); return; }
+
+    const txId = editing ? initial!.id : (data?.[0]?.id ?? null);
+    if (linkedOccurrence && txId) {
+      await supabase.from('planned_payments').insert({
+        planned_id: linkedOccurrence.planned_id,
+        due_date: linkedOccurrence.due_date,
+        paid_on: date || todayIso(),
+        transaction_id: txId,
+      });
+      notifyPaymentsChanged();
+    }
 
     setSaving(false);
-    if (err) { setError(err.message); return; }
     onSaved();
   }
 
@@ -181,6 +213,42 @@ export default function TransactionForm({
               <option value="in">{t('common.directionIn')}</option>
             </select>
           </div>
+        </div>
+      )}
+
+      {/* Auto-match suggestion */}
+      {autoMatch && !linkedOccurrence && (
+        <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 flex items-center justify-between gap-3 text-sm">
+          <span className="text-blue-800">
+            {t('transactionForm.matchedScheduled')}:&nbsp;
+            <span className="font-medium">{autoMatch.description}</span>
+            &nbsp;({t('dashboard.due').toLowerCase()} {formatDate(autoMatch.due_date)})
+          </span>
+          <div className="flex gap-2 shrink-0">
+            <button type="button" className="btn-primary text-xs py-0.5 px-2"
+              onClick={() => setLinkedOccurrence(autoMatch)}>
+              {t('transactionForm.linkConfirm')}
+            </button>
+            <button type="button" className="btn-secondary text-xs py-0.5 px-2"
+              onClick={() => setMatchDismissed(true)}>
+              {t('transactionForm.linkDismiss')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmed link */}
+      {linkedOccurrence && (
+        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 flex items-center justify-between gap-3 text-sm">
+          <span className="text-emerald-800">
+            ✓ {t('transactionForm.linkedTo')}:&nbsp;
+            <span className="font-medium">{linkedOccurrence.description}</span>
+            &nbsp;({formatDate(linkedOccurrence.due_date)})
+          </span>
+          <button type="button" className="text-xs text-emerald-600 hover:text-emerald-800"
+            onClick={() => setLinkedOccurrence(null)}>
+            {t('transactionForm.linkDismiss')}
+          </button>
         </div>
       )}
 

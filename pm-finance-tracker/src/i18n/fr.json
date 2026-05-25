@@ -188,7 +188,12 @@
     "descriptionRequired": "La description est obligatoire.",
     "saveChanges": "Enregistrer les modifications",
     "create": "Créer",
-    "deleteItem": "Supprimer cet élément planifié ?"
+    "deleteItem": "Supprimer cet élément planifié ?",
+    "overdueSection": "En retard — action requise",
+    "overdueHint": "Ces paiements planifiés sont en retard et non encore enregistrés.",
+    "overdueCount_one": "{{count}} élément",
+    "overdueCount_other": "{{count}} éléments",
+    "markPaid": "✓ Marquer payé"
   },
   "transactionForm": {
     "fundingSource": "Source de financement",
@@ -202,7 +207,11 @@
     "enterNonZeroAmount": "Entrez un montant non nul.",
     "saveChanges": "Enregistrer les modifications",
     "addTransaction": "Ajouter une transaction",
-    "descriptionPlaceholder": "ex. Hôtel Zurich 4 nuits"
+    "descriptionPlaceholder": "ex. Hôtel Zurich 4 nuits",
+    "matchedScheduled": "Correspond à un élément planifié",
+    "linkConfirm": "Lier",
+    "linkDismiss": "Ignorer",
+    "linkedTo": "Lié à"
   },
   "import": {
     "title": "Import",
