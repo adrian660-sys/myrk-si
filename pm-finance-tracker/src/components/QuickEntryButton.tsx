@@ -27,7 +27,7 @@ export default function QuickEntryButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 z-30 h-14 w-14 rounded-full bg-ink text-white text-2xl shadow-lg hover:bg-black"
+        className="fixed bottom-5 right-5 z-30 h-14 w-14 rounded-full bg-ink text-white text-2xl shadow-lg hover:bg-black print:hidden"
         aria-label="Quick add transaction"
       >
         +

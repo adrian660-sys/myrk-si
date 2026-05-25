@@ -9,15 +9,15 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   return (
     <AmountVisibilityProvider>
-    <div className="h-screen flex bg-canvas">
+    <div className="h-screen flex bg-canvas print:block print:h-auto print:bg-white">
       {/* Desktop sidebar */}
-      <div className="hidden md:block h-full">
+      <div className="hidden md:block h-full print:hidden">
         <Sidebar />
       </div>
 
       {/* Mobile sidebar */}
       {mobileOpen && (
-        <div className="md:hidden fixed inset-0 z-40 flex">
+        <div className="md:hidden fixed inset-0 z-40 flex print:hidden">
           <div className="h-full">
             <Sidebar onNavigate={() => setMobileOpen(false)} />
           </div>
@@ -29,8 +29,8 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="md:hidden flex items-center justify-between border-b border-line bg-white px-4 h-14">
+      <div className="flex-1 flex flex-col min-w-0 print:block">
+        <header className="md:hidden flex items-center justify-between border-b border-line bg-white px-4 h-14 print:hidden">
           <button
             onClick={() => setMobileOpen(true)}
             className="text-sm font-medium"
@@ -41,7 +41,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <span className="font-semibold">PM Finance</span>
           <AmountVisibilityToggle className="!text-ink !bg-canvas border border-line" />
         </header>
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto print:overflow-visible">{children}</main>
       </div>
 
       <QuickEntryButton />
