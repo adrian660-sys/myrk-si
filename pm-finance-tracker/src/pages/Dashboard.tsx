@@ -100,12 +100,16 @@ export default function Dashboard() {
 
   const projection = useMemo(() => projectMonths(planned, 12), [planned]);
   const projectionWithRunning = useMemo(() => {
-    let running = totals.cash;
+    let runCash = balanceBySource.cash;
+    let runDh = balanceBySource.dh;
+    let runRevolut = balanceBySource.revolut;
     return projection.map((m) => {
-      running += m.net;
-      return { ...m, runningCash: running };
+      runCash += m.bySource.Cash ?? 0;
+      runDh += m.bySource.DH ?? 0;
+      runRevolut += m.bySource.Revolut ?? 0;
+      return { ...m, runCash, runDh, runRevolut, runTotal: runCash + runDh + runRevolut };
     });
-  }, [projection, totals.cash]);
+  }, [projection, balanceBySource]);
 
   if (loading) return <div className="p-6 text-muted">Loading…</div>;
   if (error) return <div className="p-6 text-expense">Error: {error}</div>;
@@ -259,27 +263,31 @@ export default function Dashboard() {
               <thead className="text-muted text-left">
                 <tr>
                   <th className="px-5 py-2 font-medium">{t('dashboard.month')}</th>
-                  <th className="px-5 py-2 font-medium text-right">{t('dashboard.expectedIn')}</th>
-                  <th className="px-5 py-2 font-medium text-right">{t('dashboard.expectedOut')}</th>
                   <th className="px-5 py-2 font-medium text-right">{t('dashboard.net')}</th>
-                  <th className="px-5 py-2 font-medium text-right">{t('dashboard.projectedCash')}</th>
+                  <th className="px-5 py-2 font-medium text-right">Cash</th>
+                  <th className="px-5 py-2 font-medium text-right">DH</th>
+                  <th className="px-5 py-2 font-medium text-right">Revolut</th>
+                  <th className="px-5 py-2 font-medium text-right">{t('dashboard.projectedTotal')}</th>
                 </tr>
               </thead>
               <tbody>
                 {projectionWithRunning.map((m) => (
                   <tr key={m.monthKey} className="border-t border-line">
                     <td className="px-5 py-2">{monthLabel(m.monthKey)}</td>
-                    <td className="px-5 py-2 text-right tabular-nums text-income">
-                      {m.income > 0 ? formatEur(m.income) : '—'}
-                    </td>
-                    <td className="px-5 py-2 text-right tabular-nums text-expense">
-                      {m.expense > 0 ? '−' + formatEur(m.expense) : '—'}
-                    </td>
                     <td className={`px-5 py-2 text-right tabular-nums ${m.net >= 0 ? 'text-income' : 'text-expense'}`}>
-                      {formatSigned(m.net)}
+                      {m.net !== 0 ? formatSigned(m.net) : '—'}
                     </td>
-                    <td className={`px-5 py-2 text-right tabular-nums font-medium ${m.runningCash >= 0 ? '' : 'text-expense'}`}>
-                      {formatEur(m.runningCash)}
+                    <td className={`px-5 py-2 text-right tabular-nums ${m.runCash < 0 ? 'text-expense' : ''}`}>
+                      {formatEur(m.runCash)}
+                    </td>
+                    <td className={`px-5 py-2 text-right tabular-nums ${m.runDh < 0 ? 'text-expense' : ''}`}>
+                      {formatEur(m.runDh)}
+                    </td>
+                    <td className={`px-5 py-2 text-right tabular-nums ${m.runRevolut < 0 ? 'text-expense' : ''}`}>
+                      {formatEur(m.runRevolut)}
+                    </td>
+                    <td className={`px-5 py-2 text-right tabular-nums font-medium ${m.runTotal < 0 ? 'text-expense' : ''}`}>
+                      {formatEur(m.runTotal)}
                     </td>
                   </tr>
                 ))}
@@ -287,7 +295,7 @@ export default function Dashboard() {
             </table>
           </div>
           <div className="px-5 py-2 text-xs text-muted border-t border-line">
-            {t('dashboard.projectionNote', { balance: formatEur(totals.cash) })}
+            {t('dashboard.projectionNote', { balance: formatEur(balanceBySource.total) })}
           </div>
         </Collapsible>
       )}

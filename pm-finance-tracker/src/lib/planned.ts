@@ -147,6 +147,7 @@ export interface ProjectionMonth {
   income: number;         // sum of positive occurrence amounts
   expense: number;        // sum of |negative occurrence amounts|
   net: number;            // income - expense
+  bySource: Record<string, number>;  // signed net per funding source
   occurrences: PlannedOccurrence[];
 }
 
@@ -162,7 +163,7 @@ export function projectMonths(
   const map = new Map<string, ProjectionMonth>();
   for (let i = 0; i < horizonMonths; i++) {
     const k = addMonths(start, i).slice(0, 7);
-    map.set(k, { monthKey: k, income: 0, expense: 0, net: 0, occurrences: [] });
+    map.set(k, { monthKey: k, income: 0, expense: 0, net: 0, bySource: {}, occurrences: [] });
   }
   for (const occ of all) {
     const k = occ.due_date.slice(0, 7);
@@ -171,6 +172,7 @@ export function projectMonths(
     if (occ.amount > 0) row.income += occ.amount;
     else row.expense += Math.abs(occ.amount);
     row.net = row.income - row.expense;
+    row.bySource[occ.funding_source] = (row.bySource[occ.funding_source] ?? 0) + occ.amount;
     row.occurrences.push(occ);
   }
   return [...map.values()];
