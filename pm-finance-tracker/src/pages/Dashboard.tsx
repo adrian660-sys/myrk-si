@@ -1,11 +1,11 @@
-import { Fragment, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import KpiCard from '../components/KpiCard';
 import MarkPaidModal from '../components/MarkPaidModal';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
-import { computeTripBalances, cashWalletBalance } from '../lib/tripBalance';
+import { computeTripBalances } from '../lib/tripBalance';
 import { formatEur, formatSigned, formatDate, monthLabel } from '../lib/format';
 import {
   projectMonths, upcomingOccurrences, isOccurrencePaid, todayIsoLocal, daysBetween,
@@ -16,7 +16,7 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const isAdmin = useIsAdmin();
   const {
-    trips, transactions, cashReceived, projectReceipts, planned, plannedPayments,
+    trips, transactions, cashReceived, planned, plannedPayments,
     categories, subcategories, reload, loading, error,
   } = useFinanceData();
   const [markPaidOccurrence, setMarkPaidOccurrence] = useState<PlannedOccurrence | null>(null);
@@ -26,20 +26,6 @@ export default function Dashboard() {
     [trips, transactions, cashReceived]
   );
 
-  const totals = useMemo(() => {
-    const income = projectReceipts.reduce((s, r) => s + r.amount, 0);
-    const freshCash = cashReceived.reduce((s, c) => s + c.amount, 0);
-    let expenses = 0;
-    for (const t of transactions) {
-      if (t.category === 'Transfer') continue;
-      if (t.amount < 0) expenses += Math.abs(t.amount);
-    }
-    return {
-      income, freshCash, expenses,
-      cash: cashWalletBalance(transactions, cashReceived),
-    };
-  }, [transactions, cashReceived, projectReceipts]);
-
   const balanceBySource = useMemo(() => {
     let cash = 0, dh = 0, revolut = 0;
     for (const c of cashReceived) {
@@ -47,39 +33,13 @@ export default function Dashboard() {
       else if (c.funding_source === 'DH') dh += c.amount;
       else if (c.funding_source === 'Revolut') revolut += c.amount;
     }
-    for (const r of projectReceipts) {
-      if (r.funding_source === 'Cash') cash += r.amount;
-      else if (r.funding_source === 'DH') dh += r.amount;
-      else if (r.funding_source === 'Revolut') revolut += r.amount;
-    }
     for (const t of transactions) {
       if (t.funding_source === 'Cash') cash += t.amount;
       else if (t.funding_source === 'DH') dh += t.amount;
       else if (t.funding_source === 'Revolut') revolut += t.amount;
     }
     return { cash, dh, revolut, total: cash + dh + revolut };
-  }, [cashReceived, projectReceipts, transactions]);
-
-  const expenseBreakdown = useMemo(() => {
-    const map = new Map<string, Map<string, number>>();
-    for (const t of transactions) {
-      if (t.category === 'Transfer') continue;
-      if (t.amount >= 0) continue;
-      const subMap = map.get(t.category) ?? new Map<string, number>();
-      const subKey = t.subcategory ?? '—';
-      subMap.set(subKey, (subMap.get(subKey) ?? 0) + Math.abs(t.amount));
-      map.set(t.category, subMap);
-    }
-    return [...map.entries()]
-      .map(([category, subs]) => ({
-        category,
-        total: [...subs.values()].reduce((s, v) => s + v, 0),
-        subs: [...subs.entries()]
-          .map(([sub, amount]) => ({ sub, amount }))
-          .sort((a, b) => b.amount - a.amount),
-      }))
-      .sort((a, b) => b.total - a.total);
-  }, [transactions]);
+  }, [cashReceived, transactions]);
 
   const drafts = useMemo(() => transactions.filter((t) => !t.date), [transactions]);
   const travelNoTrip = useMemo(
@@ -137,17 +97,6 @@ export default function Dashboard() {
             tone={balanceBySource.total >= 0 ? 'income' : 'expense'}
             hint={t('dashboard.totalHint')} />
         </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="section-heading">{t('dashboard.totalSum')}</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <KpiCard label={t('dashboard.income')} value={totals.income} tone="neutral"
-            hint={t('dashboard.incomeHint')} />
-          <KpiCard label="Cash" value={totals.freshCash} tone="neutral"
-            hint={t('dashboard.cashTripHint')} />
-        </div>
-        <ExpensesCard total={totals.expenses} breakdown={expenseBreakdown} />
       </section>
 
       {drafts.length > 0 && (
@@ -377,61 +326,3 @@ function Collapsible({
   );
 }
 
-function ExpensesCard({
-  total, breakdown,
-}: {
-  total: number;
-  breakdown: { category: string; total: number; subs: { sub: string; amount: number }[] }[];
-}) {
-  const [open, setOpen] = useState(false);
-  const { t } = useTranslation();
-  return (
-    <div className="card-pad">
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-start justify-between text-left"
-      >
-        <div>
-          <div className="text-xs uppercase tracking-wide text-muted">{t('dashboard.totalExpenses')}</div>
-          <div className="mt-2 text-2xl font-semibold tabular-nums text-ink">
-            {formatEur(total)}
-          </div>
-          <div className="mt-1 text-xs text-muted">
-            {open ? t('dashboard.clickToHide') : t('dashboard.clickForBreakdown')}
-          </div>
-        </div>
-        <span className={`text-muted text-xs inline-block transition-transform mt-1 ${open ? 'rotate-90' : ''}`}>▶</span>
-      </button>
-      {open && breakdown.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-line">
-          <table className="w-full text-sm">
-            <tbody>
-              {breakdown.map((cat) => (
-                <Fragment key={cat.category}>
-                  <tr className="border-t border-line first:border-t-0">
-                    <td className="px-2 py-2 font-medium">{cat.category}</td>
-                    <td className="px-2 py-2 text-right tabular-nums font-medium">
-                      {formatEur(cat.total)}
-                    </td>
-                  </tr>
-                  {cat.subs.map((s) => (
-                    <tr key={s.sub} className="text-muted">
-                      <td className="px-2 py-1 pl-8 text-xs">{s.sub}</td>
-                      <td className="px-2 py-1 text-right tabular-nums text-xs">{formatEur(s.amount)}</td>
-                    </tr>
-                  ))}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {open && breakdown.length === 0 && (
-        <div className="mt-4 pt-4 border-t border-line text-sm text-muted">
-          {t('dashboard.noExpenses')}
-        </div>
-      )}
-    </div>
-  );
-}

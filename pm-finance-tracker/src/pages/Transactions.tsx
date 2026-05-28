@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal';
@@ -7,7 +7,7 @@ import { useFinanceData } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import { FUNDING_SOURCES } from '../lib/constants';
-import { formatDate, formatSigned, monthKey, monthLabel } from '../lib/format';
+import { formatDate, formatEur, formatSigned, monthKey, monthLabel } from '../lib/format';
 import { downloadTransactionsCsv } from '../lib/csv';
 import type { Transaction } from '../lib/types';
 
@@ -66,6 +66,25 @@ export default function Transactions() {
     for (const t of transactions) if (t.date) set.add(monthKey(t.date));
     return [...set].sort((a, b) => b.localeCompare(a));
   }, [transactions]);
+
+  const expenseBreakdown = useMemo(() => {
+    const map = new Map<string, Map<string, number>>();
+    for (const t of filtered) {
+      if (t.category === 'Transfer') continue;
+      if (t.amount >= 0) continue;
+      const subMap = map.get(t.category) ?? new Map<string, number>();
+      const subKey = t.subcategory ?? '—';
+      subMap.set(subKey, (subMap.get(subKey) ?? 0) + Math.abs(t.amount));
+      map.set(t.category, subMap);
+    }
+    return [...map.entries()]
+      .map(([category, subs]) => ({
+        category,
+        total: [...subs.values()].reduce((s, v) => s + v, 0),
+        subs: [...subs.entries()].map(([sub, amount]) => ({ sub, amount })).sort((a, b) => b.amount - a.amount),
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [filtered]);
 
   const [editing, setEditing] = useState<Transaction | null>(null);
 
@@ -148,6 +167,10 @@ export default function Transactions() {
         </div>
       </div>
 
+      {expenseBreakdown.length > 0 && (
+        <ExpensesCard breakdown={expenseBreakdown} />
+      )}
+
       <div className="card overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-muted text-left bg-canvas/40">
@@ -228,6 +251,53 @@ export default function Transactions() {
           />
         )}
       </Modal>
+    </div>
+  );
+}
+
+type BreakdownRow = { category: string; total: number; subs: { sub: string; amount: number }[] };
+
+function ExpensesCard({ breakdown }: { breakdown: BreakdownRow[] }) {
+  const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
+  const total = breakdown.reduce((s, c) => s + c.total, 0);
+  return (
+    <div className="card-pad">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between text-left gap-4"
+      >
+        <div className="flex items-baseline gap-3">
+          <span className="text-sm font-medium text-muted">{t('dashboard.totalExpenses')}</span>
+          <span className="font-display text-2xl tabular-nums tracking-tight text-expense">
+            {formatEur(total)}
+          </span>
+        </div>
+        <span className={`text-muted text-xs transition-transform ${open ? 'rotate-90' : ''}`}>▶</span>
+      </button>
+      {open && (
+        <div className="mt-4 pt-4 border-t border-line">
+          <table className="w-full text-sm">
+            <tbody>
+              {breakdown.map((cat) => (
+                <Fragment key={cat.category}>
+                  <tr className="border-t border-line first:border-t-0">
+                    <td className="px-2 py-2 font-medium">{cat.category}</td>
+                    <td className="px-2 py-2 text-right tabular-nums font-medium">{formatEur(cat.total)}</td>
+                  </tr>
+                  {cat.subs.map((s) => (
+                    <tr key={s.sub} className="text-muted">
+                      <td className="px-2 py-1 pl-8 text-xs">{s.sub}</td>
+                      <td className="px-2 py-1 text-right tabular-nums text-xs">{formatEur(s.amount)}</td>
+                    </tr>
+                  ))}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
