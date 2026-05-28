@@ -16,7 +16,7 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const isAdmin = useIsAdmin();
   const {
-    trips, transactions, cashReceived, planned, plannedPayments,
+    trips, transactions, cashReceived, projectReceipts, planned, plannedPayments,
     categories, subcategories, reload, loading, error,
   } = useFinanceData();
   const [markPaidOccurrence, setMarkPaidOccurrence] = useState<PlannedOccurrence | null>(null);
@@ -33,13 +33,18 @@ export default function Dashboard() {
       else if (c.funding_source === 'DH') dh += c.amount;
       else if (c.funding_source === 'Revolut') revolut += c.amount;
     }
+    for (const r of projectReceipts) {
+      if (r.funding_source === 'Cash') cash += r.amount;
+      else if (r.funding_source === 'DH') dh += r.amount;
+      else if (r.funding_source === 'Revolut') revolut += r.amount;
+    }
     for (const t of transactions) {
       if (t.funding_source === 'Cash') cash += t.amount;
       else if (t.funding_source === 'DH') dh += t.amount;
       else if (t.funding_source === 'Revolut') revolut += t.amount;
     }
     return { cash, dh, revolut, total: cash + dh + revolut };
-  }, [cashReceived, transactions]);
+  }, [cashReceived, projectReceipts, transactions]);
 
   const drafts = useMemo(() => transactions.filter((t) => !t.date), [transactions]);
   const travelNoTrip = useMemo(
