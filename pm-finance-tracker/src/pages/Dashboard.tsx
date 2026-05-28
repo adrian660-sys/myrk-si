@@ -5,7 +5,6 @@ import KpiCard from '../components/KpiCard';
 import MarkPaidModal from '../components/MarkPaidModal';
 import { useFinanceData } from '../hooks/useFinanceData';
 import { useIsAdmin } from '../hooks/useAuth';
-import { computeTripBalances } from '../lib/tripBalance';
 import { formatEur, formatSigned, formatDate, monthLabel } from '../lib/format';
 import {
   projectMonths, upcomingOccurrences, isOccurrencePaid, todayIsoLocal, daysBetween,
@@ -20,11 +19,6 @@ export default function Dashboard() {
     categories, subcategories, reload, loading, error,
   } = useFinanceData();
   const [markPaidOccurrence, setMarkPaidOccurrence] = useState<PlannedOccurrence | null>(null);
-
-  const balances = useMemo(
-    () => computeTripBalances(trips, transactions, cashReceived),
-    [trips, transactions, cashReceived]
-  );
 
   const balanceBySource = useMemo(() => {
     let cash = 0, dh = 0, revolut = 0;
@@ -265,41 +259,6 @@ export default function Dashboard() {
         onClose={() => setMarkPaidOccurrence(null)}
       />
 
-      <Collapsible
-        title={t('dashboard.cashBalanceByTrip')}
-        right={<Link className="text-sm text-muted hover:text-ink" to="/trips">{t('dashboard.manageTrips')}</Link>}
-        defaultOpen={false}
-      >
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="text-muted text-left">
-              <tr>
-                <th className="px-5 py-2 font-medium">{t('nav.trips')}</th>
-                <th className="px-5 py-2 font-medium">{t('trips.dates')}</th>
-                <th className="px-5 py-2 font-medium text-right">{t('dashboard.freshCash')}</th>
-                <th className="px-5 py-2 font-medium text-right">{t('dashboard.cashSpent')}</th>
-                <th className="px-5 py-2 font-medium text-right">{t('dashboard.lastBalance')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {balances.length === 0 && (
-                <tr><td colSpan={5} className="px-5 py-4 text-muted">{t('dashboard.noTrips')}</td></tr>
-              )}
-              {balances.map((b) => (
-                <tr key={b.trip.id} className="border-t border-line">
-                  <td className="px-5 py-2">{b.trip.name} <span className="text-muted">· {b.trip.city}</span></td>
-                  <td className="px-5 py-2 text-muted">
-                    {formatDate(b.trip.start_date)} – {formatDate(b.trip.end_date)}
-                  </td>
-                  <td className="px-5 py-2 text-right tabular-nums">{formatEur(b.freshCash)}</td>
-                  <td className="px-5 py-2 text-right tabular-nums text-expense">−{formatEur(b.cashExpenses)}</td>
-                  <td className="px-5 py-2 text-right tabular-nums font-medium">{formatEur(b.lastBalance)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Collapsible>
     </div>
   );
 }
