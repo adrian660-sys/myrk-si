@@ -35,7 +35,7 @@ export default function Footer() {
         </a>
 
         <p className="font-sans text-xs t-cream-faint tracking-wider">
-          © 2025 Adrian Džeka · Ljubljana, SI ·{" "}
+          © {new Date().getFullYear()} Adrian Džeka · Ljubljana, SI ·{" "}
           <a
             href="mailto:adrian@myrk.si"
             className="hover:text-cream/60 transition-colors"

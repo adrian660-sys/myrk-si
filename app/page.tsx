@@ -13,7 +13,11 @@ export default function Home() {
       <Navbar />
       <main>
         <HeroSection />
+        {/* Dark → Light bridge */}
+        <div aria-hidden="true" className="h-16 bg-gradient-to-b from-[#080808] to-[#f9f6f0]" />
         <AboutSection />
+        {/* Light → Dark bridge */}
+        <div aria-hidden="true" className="h-16 bg-gradient-to-b from-[#f9f6f0] to-[#080808]" />
         <LetsTalkSection />
       </main>
       <Footer />

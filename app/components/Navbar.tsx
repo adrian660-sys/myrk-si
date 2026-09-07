@@ -11,6 +11,8 @@ const navLinks = [
   { label: "Notebook", href: "/notebook" },
 ];
 
+const CONTACT_ID = "contact";
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -19,11 +21,20 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  /* Background on scroll */
+  /* Background on scroll — triggers at >0 so nav stays readable over light sections */
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 60);
+    const fn = () => setScrolled(window.scrollY > 0);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
+  }, []);
+
+  /* Close on Escape */
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", fn);
+    return () => document.removeEventListener("keydown", fn);
   }, []);
 
   /* Mobile overlay animation */
@@ -64,6 +75,18 @@ export default function Navbar() {
     e.preventDefault();
     setMenuOpen(false);
     router.push(href);
+  };
+
+  const scrollToContact = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setMenuOpen(false);
+    if (pathname === "/") {
+      document
+        .getElementById(CONTACT_ID)
+        ?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      router.push("/#" + CONTACT_ID);
+    }
   };
 
   const isLinkActive = (href: string) => {
@@ -107,6 +130,15 @@ export default function Navbar() {
               </a>
             </li>
           ))}
+          <li>
+            <a
+              href="/#contact"
+              onClick={scrollToContact}
+              className="font-sans text-xs tracking-[0.2em] uppercase transition-colors duration-300 text-cream/60 hover:text-cream"
+            >
+              Contact
+            </a>
+          </li>
         </ul>
 
         {/* Hamburger (44px tap target) */}
@@ -153,6 +185,13 @@ export default function Navbar() {
               {label}
             </a>
           ))}
+          <a
+            href="/#contact"
+            onClick={scrollToContact}
+            className="font-serif text-[2.8rem] font-light transition-colors duration-300 text-cream hover:text-gold"
+          >
+            Contact
+          </a>
         </div>
       </div>
     </>

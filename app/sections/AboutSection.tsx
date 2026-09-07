@@ -10,7 +10,12 @@ export default function AboutSection() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
     const ctx = gsap.context(() => {
+      if (prefersReduced) return;
       gsap.from(
         sectionRef.current?.querySelectorAll(".anim") ?? [],
         {
@@ -37,7 +42,6 @@ export default function AboutSection() {
       data-section
       ref={sectionRef}
       className="section-light py-12 md:py-20 px-6 md:px-14 overflow-hidden"
-      style={{ scrollMarginTop: "80px" }}
     >
       <div className="max-w-7xl mx-auto">
         {/*

@@ -20,7 +20,12 @@ export default function LetsTalkSection() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
 
   useEffect(() => {
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
     const ctx = gsap.context(() => {
+      if (prefersReduced) return;
       gsap.fromTo(
         headlineRef.current?.querySelectorAll(".reveal") ?? [],
         { y: 50, opacity: 0 },
@@ -82,7 +87,7 @@ export default function LetsTalkSection() {
   };
 
   const inputClass =
-    "w-full bg-transparent border-b border-cream/20 py-3 font-sans text-[15px] text-cream placeholder-cream/30 focus:outline-none focus:border-gold/60 transition-colors duration-300";
+    "w-full bg-transparent border-b border-cream/20 py-3 font-sans text-[15px] text-cream placeholder-cream/30 outline-none focus-visible:border-gold/80 focus-visible:ring-1 focus-visible:ring-gold/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#080808] transition-colors duration-300";
 
   return (
     <section
@@ -90,7 +95,6 @@ export default function LetsTalkSection() {
       data-section
       ref={sectionRef}
       className="section-dark relative py-28 md:py-40 px-6 md:px-14 overflow-hidden"
-      style={{ scrollMarginTop: "80px" }}
     >
       {/* Big editorial watermark */}
       <div
@@ -143,7 +147,7 @@ export default function LetsTalkSection() {
                 <span className="relative flex w-2 h-2">
                   <span
                     aria-hidden="true"
-                    className="absolute inline-flex h-full w-full rounded-full bg-gold/60 opacity-75 animate-pulse-ring"
+                    className="absolute inline-flex h-full w-full rounded-full bg-gold/60 opacity-75 animate-pulse-ring motion-reduce:animate-none"
                   />
                   <span className="relative inline-flex w-2 h-2 rounded-full bg-gold" />
                 </span>
