@@ -41,7 +41,7 @@ export default function AboutSection() {
       id="about"
       data-section
       ref={sectionRef}
-      className="section-light py-12 md:py-20 px-6 md:px-14 overflow-hidden"
+      className="section-light py-20 md:py-32 px-6 md:px-14 overflow-hidden"
     >
       <div className="max-w-7xl mx-auto">
         {/*
@@ -102,7 +102,7 @@ export default function AboutSection() {
             <p className="font-sans text-xs tracking-[0.35em] uppercase text-[#c9a84c]">
               About
             </p>
-            <h2 className="font-serif text-[clamp(2.4rem,5vw,4.5rem)] font-light leading-[1.05] text-[#1a1a1a]">
+            <h2 className="font-serif text-[clamp(2.2rem,4.5vw,4rem)] font-light leading-[1.05] text-[#1a1a1a]">
               How you do one thing<br />
               <span className="text-[#c9a84c]">is how you do everything.</span>
             </h2>

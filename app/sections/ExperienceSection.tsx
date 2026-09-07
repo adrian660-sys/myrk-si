@@ -108,7 +108,12 @@ export default function ExperienceSection() {
   const filtered = active === "All" ? jobs : jobs.filter((j) => j.type === active);
 
   useEffect(() => {
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
     const ctx = gsap.context(() => {
+      if (prefersReduced) return;
       gsap.fromTo(
         headlineRef.current,
         { y: 50, opacity: 0 },
@@ -129,6 +134,10 @@ export default function ExperienceSection() {
 
   useEffect(() => {
     if (!listRef.current) return;
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (prefersReduced) return;
     const cards = listRef.current.querySelectorAll(".job-card");
     gsap.fromTo(
       cards,
@@ -150,7 +159,7 @@ export default function ExperienceSection() {
           <p className="font-sans text-xs tracking-[0.35em] uppercase text-[#c9a84c] mb-3">
             Experience
           </p>
-          <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] font-light text-dark leading-tight">
+          <h2 className="font-serif text-[clamp(2.2rem,4.5vw,4rem)] font-light text-dark leading-tight">
             The full record.
           </h2>
           <p className="font-sans text-[15px] t-ink-muted leading-relaxed max-w-xl mt-4">

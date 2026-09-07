@@ -93,7 +93,12 @@ export default function ResearchSection() {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
     const ctx = gsap.context(() => {
+      if (prefersReduced) return;
       gsap.fromTo(
         sectionRef.current?.querySelectorAll(".reveal") ?? [],
         { y: 30, opacity: 0 },
@@ -121,7 +126,7 @@ export default function ResearchSection() {
           <p className="font-sans text-xs tracking-[0.35em] uppercase text-[#c9a84c] mb-3">
             Projects
           </p>
-          <h2 className="font-serif text-[clamp(2rem,4vw,3.5rem)] font-light text-dark leading-tight">
+          <h2 className="font-serif text-[clamp(2.2rem,4.5vw,4rem)] font-light text-dark leading-tight">
             Selected work.
           </h2>
           <p className="mt-4 font-sans text-[15px] t-ink-muted leading-relaxed max-w-2xl">

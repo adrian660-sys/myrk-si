@@ -75,7 +75,7 @@ export default function HeroSection() {
     <section
       id="hero"
       data-section
-      className="relative w-full min-h-[max(92vh,640px)] bg-[#080808] overflow-hidden flex flex-col"
+      className="relative w-full h-screen min-h-[640px] bg-[#080808] overflow-hidden flex flex-col"
     >
       <ParticleCanvas />
 

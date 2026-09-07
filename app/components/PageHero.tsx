@@ -41,6 +41,15 @@ export default function PageHero({
       ref.current.querySelectorAll<HTMLElement>(".word")
     );
 
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (prefersReduced) {
+      gsap.set([...blocks, ...words], { opacity: 1, y: 0 });
+      return;
+    }
+
     gsap.set([...blocks, ...words], { opacity: 0, y: 32 });
 
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
@@ -85,7 +94,6 @@ export default function PageHero({
     <section
       data-section
       className="relative w-full min-h-[78vh] bg-[#080808] overflow-hidden flex flex-col"
-      style={{ scrollMarginTop: "80px" }}
     >
       <ParticleCanvas />
 
@@ -128,7 +136,7 @@ export default function PageHero({
         <span className="font-sans text-[10px] tracking-[0.3em] uppercase text-cream/25">
           Scroll
         </span>
-        <div className="w-px h-10 bg-gradient-to-b from-cream/25 to-transparent animate-scroll-bounce" />
+        <div className="w-px h-10 bg-gradient-to-b from-cream/25 to-transparent animate-scroll-bounce motion-reduce:animate-none" />
       </div>
     </section>
   );

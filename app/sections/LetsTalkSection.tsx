@@ -111,7 +111,7 @@ export default function LetsTalkSection() {
           <p className="reveal font-sans text-xs tracking-[0.35em] uppercase text-gold mb-4">
             Let&apos;s talk
           </p>
-          <h2 className="reveal font-serif text-[clamp(2.5rem,6vw,5.5rem)] font-light text-cream leading-[1.05] mb-6">
+          <h2 className="reveal font-serif text-[clamp(2.2rem,5vw,4.5rem)] font-light text-cream leading-[1.05] mb-6">
             When you call myrk. —
             <br />
             it&apos;s handled.
